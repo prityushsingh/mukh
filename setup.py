@@ -4,16 +4,16 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name="omnifaces",
+    name="mukh",
     version="0.0.1",
     author="Ishan Dutta",
     author_email="duttaishan098@gmail.com",
     description="A python package to perform a variety of tasks on face images",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/ishandutta0098/omniface",
+    url="https://github.com/ishandutta0098/mukh",
     project_urls={
-        "Bug Tracker": "https://github.com/ishandutta0098/omniface/issues",
+        "Bug Tracker": "https://github.com/ishandutta0098/mukh/issues",
     },
     packages=find_packages(),
     classifiers=[
