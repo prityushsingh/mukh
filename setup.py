@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="mukh",
-    version="0.0.1",
+    version="0.0.2",
     author="Ishan Dutta",
     author_email="duttaishan098@gmail.com",
     description="A python package to perform a variety of tasks on face images",
