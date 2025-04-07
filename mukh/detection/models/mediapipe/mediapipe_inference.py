@@ -1,21 +1,10 @@
 import cv2
-from .mediapipe import MediaPipeFaceDetector
 
-# Initialize detector
-detector = MediaPipeFaceDetector()
+from ..mediapipe import MediaPipeFaceDetector
 
-# Read image
-image = cv2.imread('mukh/detection/models/mediapipe/demo_img.jpg')
-print(image)
+image = cv2.imread("demo_images/1.jpg")
 
-# Method 1: Get just the detections
-faces = detector(image)
-
-# Method 2: Get detections and visualized image
-faces, annotated_image = detector(image, return_annotated=True)
-
-# Display results
-
-output_path = "mukh/detection/models/mediapipe/output.png"  # Change this to your desired output path
-cv2.imwrite(output_path, annotated_image)
-print(f"Saved detection result to {output_path}")
+mediapipe_detector = MediaPipeFaceDetector()
+faces = mediapipe_detector.detect(image)
+faces, annotated_image = mediapipe_detector.detect_with_landmarks(image)
+cv2.imwrite("output_images/mediapipe_output.png", annotated_image)

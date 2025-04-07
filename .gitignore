@@ -36,3 +36,4 @@ ENV/
 # Miscellaneous
 pyproject.toml
 update_package.sh
+temp/
