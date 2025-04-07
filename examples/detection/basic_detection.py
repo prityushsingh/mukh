@@ -9,6 +9,9 @@ detection_model = "mediapipe"
 # Create detector
 detector = FaceDetector.create(detection_model)
 
+# To view available models
+# print(detector.list_available_models())
+
 # Load image
 image = cv2.imread("demo_images/1.jpg")
 
