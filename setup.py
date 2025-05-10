@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
@@ -30,8 +30,7 @@ setup(
         "torch>=2.5.1",
         "torchvision>=0.20.1",
         "matplotlib>=3.10.0",
-        "matplotlib-inline>=0.1.7"
-        
+        "matplotlib-inline>=0.1.7",
     ],
     extras_require={
         "dev": [
@@ -44,4 +43,4 @@ setup(
             "bump2version>=1.0.0",
         ],
     },
-) 
+)

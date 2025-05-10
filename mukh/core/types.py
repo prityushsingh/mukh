@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import List, Optional
+
 import numpy as np
+
 
 @dataclass
 class BoundingBox:
@@ -17,6 +19,7 @@ class BoundingBox:
     @property
     def height(self) -> float:
         return self.y2 - self.y1
+
 
 @dataclass
 class FaceDetection:
