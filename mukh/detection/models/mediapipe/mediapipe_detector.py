@@ -1,3 +1,10 @@
+"""
+MediaPipe Face Detection model 
+https://github.com/google-ai-edge/mediapipe
+
+Original implementation by Google
+"""
+
 from typing import List, Tuple
 
 import cv2

@@ -1,3 +1,10 @@
+"""
+BlazeFace PyTorch implementation adapted from:
+https://github.com/hollance/BlazeFace-PyTorch
+
+Original implementation by M.I. Hollemans
+"""
+
 from typing import List, Tuple
 
 import cv2

@@ -1,3 +1,10 @@
+"""
+UltraLight PyTorch implementation adapted from:
+https://github.com/Linzaer/Ultra-Light-Fast-Generic-Face-Detector-1MB
+
+Original implementation by Linzaer
+"""
+
 import os
 from typing import List, Tuple
 
