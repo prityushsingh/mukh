@@ -36,6 +36,7 @@ ENV/
 # Miscellaneous
 update_package.sh
 temp/
+output_images
 
 # Mac
 .DS_Store
