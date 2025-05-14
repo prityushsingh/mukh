@@ -22,7 +22,10 @@ class BlazeFaceDetector(BaseFaceDetector):
         self.net.load_weights(weights_path)
         self.net.load_anchors(anchors_path)
 
-    def detect(self, image: np.ndarray) -> List[FaceDetection]:
+    def detect(self, image_path: str) -> List[FaceDetection]:
+        # Load image from path
+        image = self._load_image(image_path)
+
         # Get original dimensions
         orig_h, orig_w = image.shape[:2]
 
@@ -60,9 +63,13 @@ class BlazeFaceDetector(BaseFaceDetector):
         return faces
 
     def detect_with_landmarks(
-        self, image: np.ndarray
+        self, image_path: str
     ) -> Tuple[List[FaceDetection], np.ndarray]:
-        faces = self.detect(image)
+        # Load image and detect faces
+        image = self._load_image(image_path)
+        faces = self.detect(image_path)
+
+        # Draw detections on image copy
         annotated_image = self._draw_detections(image, faces)
         return faces, annotated_image
 

@@ -17,7 +17,10 @@ class MediaPipeFaceDetector(BaseFaceDetector):
             model_selection=model_selection,
         )
 
-    def detect(self, image: np.ndarray) -> List[FaceDetection]:
+    def detect(self, image_path: str) -> List[FaceDetection]:
+        # Load image from path
+        image = self._load_image(image_path)
+
         # Convert BGR to RGB
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
@@ -52,9 +55,13 @@ class MediaPipeFaceDetector(BaseFaceDetector):
         return faces
 
     def detect_with_landmarks(
-        self, image: np.ndarray
+        self, image_path: str
     ) -> Tuple[List[FaceDetection], np.ndarray]:
-        faces = self.detect(image)
+        # Load image and detect faces
+        image = self._load_image(image_path)
+        faces = self.detect(image_path)
+
+        # Draw detections on image copy
         annotated_image = self._draw_detections(image, faces)
         return faces, annotated_image
 
