@@ -1,5 +1,11 @@
 from setuptools import find_packages, setup
 
+
+def read_requirements(file):
+    with open(file, "r", encoding="utf-8") as f:
+        return f.read().splitlines()
+
+
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
@@ -21,17 +27,8 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires=">=3.10",
-    install_requires=[
-        "numpy>=1.26.4",
-        "opencv-python>=4.11.0.86",
-        "opencv-contrib-python>=4.11.0.86",
-        "mediapipe>=0.10.21",
-        "torch>=2.5.1",
-        "torchvision>=0.20.1",
-        "matplotlib>=3.10.0",
-        "matplotlib-inline>=0.1.7",
-    ],
+    python_requires=">=3.11",
+    install_requires=read_requirements("requirements.txt"),
     extras_require={
         "dev": [
             "pytest>=6.0.0",
