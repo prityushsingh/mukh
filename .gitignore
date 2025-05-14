@@ -34,6 +34,8 @@ venv/
 ENV/ 
 
 # Miscellaneous
-pyproject.toml
 update_package.sh
 temp/
+
+# Mac
+.DS_Store
