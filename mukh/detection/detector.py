@@ -3,8 +3,9 @@ from typing import List, Literal
 from .models.base_detector import BaseFaceDetector
 from .models.blazeface import BlazeFaceDetector
 from .models.mediapipe import MediaPipeFaceDetector
+from .models.ultralight import UltralightDetector
 
-DetectorType = Literal["blazeface", "mediapipe"]
+DetectorType = Literal["blazeface", "mediapipe", "ultralight"]
 
 
 class FaceDetector:
@@ -13,7 +14,11 @@ class FaceDetector:
     @staticmethod
     def create(model: DetectorType, **kwargs) -> BaseFaceDetector:
         """Create a face detector instance."""
-        detectors = {"blazeface": BlazeFaceDetector, "mediapipe": MediaPipeFaceDetector}
+        detectors = {
+            "blazeface": BlazeFaceDetector,
+            "mediapipe": MediaPipeFaceDetector,
+            "ultralight": UltralightDetector,
+        }
 
         if model not in detectors:
             raise ValueError(
@@ -26,4 +31,4 @@ class FaceDetector:
     @staticmethod
     def list_available_models() -> List[str]:
         """Return list of available detection models."""
-        return ["blazeface", "mediapipe"]
+        return ["blazeface", "mediapipe", "ultralight"]
