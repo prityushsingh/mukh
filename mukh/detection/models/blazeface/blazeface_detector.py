@@ -1,8 +1,11 @@
-"""
-BlazeFace PyTorch implementation adapted from:
-https://github.com/hollance/BlazeFace-PyTorch
+"""BlazeFace face detection model implementation.
 
-Original implementation by M.I. Hollemans
+This module implements the BlazeFace face detection model from MediaPipe.
+Adapted from: https://github.com/hollance/BlazeFace-PyTorch
+Original implementation by M.I. Hollemans.
+
+The model is optimized for mobile devices and provides both bounding box
+detection and 6 facial landmarks.
 """
 
 from typing import List, Tuple
@@ -17,12 +20,30 @@ from .blazeface_torch import BlazeFace
 
 
 class BlazeFaceDetector(BaseFaceDetector):
+    """BlazeFace face detector implementation.
+
+    A lightweight face detector that provides both bounding boxes and facial
+    landmarks. Optimized for mobile devices.
+
+    Attributes:
+        device: PyTorch device (CPU/CUDA) for model execution
+        net: BlazeFace neural network model
+        confidence_threshold: Minimum confidence for valid detections
+    """
+
     def __init__(
         self,
         weights_path: str = "mukh/detection/models/blazeface/blazeface.pth",
         anchors_path: str = "mukh/detection/models/blazeface/anchors.npy",
         confidence_threshold: float = 0.75,
     ):
+        """Initializes the BlazeFace detector.
+
+        Args:
+            weights_path: Path to model weights file
+            anchors_path: Path to anchor boxes file
+            confidence_threshold: Minimum confidence threshold for detections
+        """
         super().__init__(confidence_threshold)
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.net = BlazeFace().to(self.device)
@@ -30,6 +51,19 @@ class BlazeFaceDetector(BaseFaceDetector):
         self.net.load_anchors(anchors_path)
 
     def detect(self, image_path: str) -> List[FaceDetection]:
+        """Detects faces in the given image.
+
+        The image is resized to 128x128 pixels for inference and the results
+        are scaled back to the original image size.
+
+        Args:
+            image_path: Path to the input image.
+
+        Returns:
+            List[FaceDetection]: List of detected faces, each containing:
+                - bbox: BoundingBox with coordinates and confidence
+                - landmarks: Array of 6 facial keypoints
+        """
         # Load image from path
         image = self._load_image(image_path)
 
@@ -72,6 +106,16 @@ class BlazeFaceDetector(BaseFaceDetector):
     def detect_with_landmarks(
         self, image_path: str
     ) -> Tuple[List[FaceDetection], np.ndarray]:
+        """Detects faces and returns annotated image with landmarks.
+
+        Args:
+            image_path: Path to the input image.
+
+        Returns:
+            tuple: Contains:
+                - List[FaceDetection]: List of detected faces
+                - np.ndarray: Copy of input image with detections drawn
+        """
         # Load image and detect faces
         image = self._load_image(image_path)
         faces = self.detect(image_path)
@@ -83,6 +127,15 @@ class BlazeFaceDetector(BaseFaceDetector):
     def _draw_detections(
         self, image: np.ndarray, faces: List[FaceDetection]
     ) -> np.ndarray:
+        """Draws detection results on the image.
+
+        Args:
+            image: Input image as numpy array
+            faces: List of detected faces
+
+        Returns:
+            np.ndarray: Copy of input image with bounding boxes and landmarks drawn
+        """
         image_copy = image.copy()
         for face in faces:
             bbox = face.bbox

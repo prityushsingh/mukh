@@ -1,8 +1,7 @@
-"""
-MediaPipe Face Detection model 
-https://github.com/google-ai-edge/mediapipe
+"""MediaPipe face detection model implementation.
 
-Original implementation by Google
+This module implements Google's MediaPipe face detection model.
+Source: https://github.com/google-ai-edge/mediapipe
 """
 
 from typing import List, Tuple
@@ -16,7 +15,24 @@ from ..base_detector import BaseFaceDetector
 
 
 class MediaPipeFaceDetector(BaseFaceDetector):
+    """MediaPipe face detector implementation.
+
+    Uses Google's MediaPipe framework for real-time face detection with
+    landmarks.
+
+    Attributes:
+        mp_face_detection: MediaPipe face detection solution
+        face_detection: Configured face detector instance
+        confidence_threshold: Minimum confidence for valid detections
+    """
+
     def __init__(self, confidence_threshold: float = 0.5, model_selection: int = 0):
+        """Initializes the MediaPipe face detector.
+
+        Args:
+            confidence_threshold: Minimum confidence threshold for detections
+            model_selection: Model type selection (0=default, 1=full range)
+        """
         super().__init__(confidence_threshold)
         self.mp_face_detection = mp.solutions.face_detection
         self.face_detection = self.mp_face_detection.FaceDetection(
@@ -25,6 +41,16 @@ class MediaPipeFaceDetector(BaseFaceDetector):
         )
 
     def detect(self, image_path: str) -> List[FaceDetection]:
+        """Detects faces in the given image using MediaPipe.
+
+        Args:
+            image_path: Path to the input image.
+
+        Returns:
+            List[FaceDetection]: List of detected faces, each containing:
+                - bbox: BoundingBox with coordinates and confidence
+                - landmarks: Array of 6 facial keypoints
+        """
         # Load image from path
         image = self._load_image(image_path)
 
@@ -64,6 +90,16 @@ class MediaPipeFaceDetector(BaseFaceDetector):
     def detect_with_landmarks(
         self, image_path: str
     ) -> Tuple[List[FaceDetection], np.ndarray]:
+        """Detects faces and returns annotated image with landmarks.
+
+        Args:
+            image_path: Path to the input image.
+
+        Returns:
+            tuple: Contains:
+                - List[FaceDetection]: List of detected faces
+                - np.ndarray: Copy of input image with detections drawn
+        """
         # Load image and detect faces
         image = self._load_image(image_path)
         faces = self.detect(image_path)
@@ -75,6 +111,15 @@ class MediaPipeFaceDetector(BaseFaceDetector):
     def _draw_detections(
         self, image: np.ndarray, faces: List[FaceDetection]
     ) -> np.ndarray:
+        """Draws detection results on the image.
+
+        Args:
+            image: Input image as numpy array
+            faces: List of detected faces
+
+        Returns:
+            np.ndarray: Copy of input image with bounding boxes and landmarks drawn
+        """
         image_copy = image.copy()
         for face in faces:
             bbox = face.bbox

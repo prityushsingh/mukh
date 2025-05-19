@@ -1,6 +1,8 @@
 """
-UltraLight PyTorch implementation adapted from:
-https://github.com/Linzaer/Ultra-Light-Fast-Generic-Face-Detector-1MB
+Ultra-Light face detection model implementation.
+
+This module implements the Ultra-Light-Fast-Generic-Face-Detector-1MB.
+Adapted from: https://github.com/Linzaer/Ultra-Light-Fast-Generic-Face-Detector-1MB
 
 Original implementation by Linzaer
 """
@@ -23,6 +25,19 @@ from .vision.ssd.mb_tiny_RFB_fd import (
 
 
 class UltralightDetector(BaseFaceDetector):
+    """Ultra-Light face detector implementation.
+
+    A 1MB size face detector optimized for edge devices. Provides bounding
+    box detection without landmarks.
+
+    Attributes:
+        device: PyTorch device (CPU/CUDA) for model execution
+        input_size: Input resolution for the model
+        net: Neural network model
+        predictor: Detection predictor instance
+        confidence_threshold: Minimum confidence for valid detections
+    """
+
     def __init__(
         self,
         net_type: str = "RFB",
@@ -32,6 +47,16 @@ class UltralightDetector(BaseFaceDetector):
         weights_path: str = "mukh/checkpoints/detection/ultralight/pretrained/version-RFB-320.pth",
         labels_path: str = "mukh/checkpoints/detection/ultralight/voc-model-labels.txt",
     ):
+        """Initializes the Ultra-Light face detector.
+
+        Args:
+            net_type: Network architecture type ("RFB" or "slim")
+            input_size: Input image size for the model
+            confidence_threshold: Minimum confidence threshold for detections
+            candidate_size: Maximum number of candidate detections
+            weights_path: Path to model weights file
+            labels_path: Path to class labels file
+        """
         super().__init__(confidence_threshold)
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.input_size = input_size
@@ -65,6 +90,19 @@ class UltralightDetector(BaseFaceDetector):
         self.candidate_size = candidate_size
 
     def detect(self, image_path: str) -> List[FaceDetection]:
+        """Detects faces in the given image using Ultra-Light model.
+
+        The image is resized to self.input_size for inference and results
+        are scaled back to original image size.
+
+        Args:
+            image_path: Path to the input image.
+
+        Returns:
+            List[FaceDetection]: List of detected faces, each containing:
+                - bbox: BoundingBox with coordinates and confidence
+                - landmarks: None (Ultralight doesn't provide landmarks)
+        """
         # Load image from path
         image = self._load_image(image_path)
         orig_height, orig_width = image.shape[:2]
@@ -104,6 +142,18 @@ class UltralightDetector(BaseFaceDetector):
     def detect_with_landmarks(
         self, image_path: str
     ) -> Tuple[List[FaceDetection], np.ndarray]:
+        """Detects faces and returns annotated image.
+
+        Note: This model does not provide facial landmarks.
+
+        Args:
+            image_path: Path to the input image.
+
+        Returns:
+            tuple: Contains:
+                - List[FaceDetection]: List of detected faces
+                - np.ndarray: Copy of input image with detections drawn
+        """
         # Load image and detect faces
         image = self._load_image(image_path)
         faces = self.detect(image_path)
@@ -115,6 +165,17 @@ class UltralightDetector(BaseFaceDetector):
     def _draw_detections(
         self, image: np.ndarray, faces: List[FaceDetection]
     ) -> np.ndarray:
+        """Draws detection results on the image.
+
+        Draws bounding boxes and confidence scores in red color.
+
+        Args:
+            image: Input image as numpy array
+            faces: List of detected faces
+
+        Returns:
+            np.ndarray: Copy of input image with bounding boxes and confidence scores drawn
+        """
         image_copy = image.copy()
         for face in faces:
             bbox = face.bbox
