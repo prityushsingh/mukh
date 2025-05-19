@@ -60,11 +60,15 @@ class UltralightDetector(BaseFaceDetector):
         """
         super().__init__(confidence_threshold)
 
-         # Use default paths from package if not provided
+        # Use default paths from package if not provided
         if weights_path is None:
-            weights_path = resource_filename('mukh', 'detection/models/ultralight/pretrained/version-RFB-320.pth')
+            weights_path = resource_filename(
+                "mukh", "detection/models/ultralight/pretrained/version-RFB-320.pth"
+            )
         if labels_path is None:
-            labels_path = resource_filename('mukh', 'detection/models/ultralight/voc-model-labels.txt')
+            labels_path = resource_filename(
+                "mukh", "detection/models/ultralight/voc-model-labels.txt"
+            )
 
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.input_size = input_size

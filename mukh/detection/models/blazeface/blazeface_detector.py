@@ -46,12 +46,16 @@ class BlazeFaceDetector(BaseFaceDetector):
             confidence_threshold: Minimum confidence threshold for detections
         """
         super().__init__(confidence_threshold)
-        
+
         # Use default paths from package if not provided
         if weights_path is None:
-            weights_path = resource_filename('mukh', 'detection/models/blazeface/blazeface.pth')
+            weights_path = resource_filename(
+                "mukh", "detection/models/blazeface/blazeface.pth"
+            )
         if anchors_path is None:
-            anchors_path = resource_filename('mukh', 'detection/models/blazeface/anchors.npy')
+            anchors_path = resource_filename(
+                "mukh", "detection/models/blazeface/anchors.npy"
+            )
 
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.net = BlazeFace().to(self.device)
