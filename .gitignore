@@ -43,3 +43,8 @@ output_images
 
 # Mac
 .DS_Store
+
+# Sphinx
+_build/
+_templates/
+_static/
