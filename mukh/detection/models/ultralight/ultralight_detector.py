@@ -44,8 +44,8 @@ class UltralightDetector(BaseFaceDetector):
         input_size: int = 320,
         confidence_threshold: float = 0.9,
         candidate_size: int = 1500,
-        weights_path: str = "mukh/checkpoints/detection/ultralight/pretrained/version-RFB-320.pth",
-        labels_path: str = "mukh/checkpoints/detection/ultralight/voc-model-labels.txt",
+        weights_path: str = "mukh/detection/models/ultralight/pretrained/version-RFB-320.pth",
+        labels_path: str = "mukh/detection/models/ultralight/voc-model-labels.txt",
     ):
         """Initializes the Ultra-Light face detector.
 
