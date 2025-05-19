@@ -13,6 +13,7 @@ from typing import List, Tuple
 import cv2
 import numpy as np
 import torch
+from pkg_resources import resource_filename
 
 from ....core.types import BoundingBox, FaceDetection
 from ..base_detector import BaseFaceDetector
@@ -33,18 +34,25 @@ class BlazeFaceDetector(BaseFaceDetector):
 
     def __init__(
         self,
-        weights_path: str = "mukh/detection/models/blazeface/blazeface.pth",
-        anchors_path: str = "mukh/detection/models/blazeface/anchors.npy",
+        weights_path: str = None,
+        anchors_path: str = None,
         confidence_threshold: float = 0.75,
     ):
         """Initializes the BlazeFace detector.
 
         Args:
-            weights_path: Path to model weights file
-            anchors_path: Path to anchor boxes file
+            weights_path: Optional custom path to model weights file
+            anchors_path: Optional custom path to anchor boxes file
             confidence_threshold: Minimum confidence threshold for detections
         """
         super().__init__(confidence_threshold)
+        
+        # Use default paths from package if not provided
+        if weights_path is None:
+            weights_path = resource_filename('mukh', 'detection/models/blazeface/blazeface.pth')
+        if anchors_path is None:
+            anchors_path = resource_filename('mukh', 'detection/models/blazeface/anchors.npy')
+
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.net = BlazeFace().to(self.device)
         self.net.load_weights(weights_path)
