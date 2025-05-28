@@ -38,7 +38,7 @@ ENV/
 # Miscellaneous
 update_package.sh
 temp/
-output_images
+output*
 *results
 
 # Mac
