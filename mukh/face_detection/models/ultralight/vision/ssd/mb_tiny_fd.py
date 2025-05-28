@@ -7,10 +7,10 @@ Original implementation by Linzaer
 
 from torch.nn import Conv2d, ModuleList, ReLU, Sequential
 
-from mukh.detection.models.ultralight.vision.nn.mb_tiny_RFB import Mb_Tiny_RFB
-from mukh.detection.models.ultralight.vision.ssd.config import fd_config as config
-from mukh.detection.models.ultralight.vision.ssd.predictor import Predictor
-from mukh.detection.models.ultralight.vision.ssd.ssd import SSD
+from mukh.face_detection.models.ultralight.vision.nn.mb_tiny import Mb_Tiny
+from mukh.face_detection.models.ultralight.vision.ssd.config import fd_config as config
+from mukh.face_detection.models.ultralight.vision.ssd.predictor import Predictor
+from mukh.face_detection.models.ultralight.vision.ssd.ssd import SSD
 
 
 def SeperableConv2d(in_channels, out_channels, kernel_size=1, stride=1, padding=0):
@@ -29,8 +29,8 @@ def SeperableConv2d(in_channels, out_channels, kernel_size=1, stride=1, padding=
     )
 
 
-def create_Mb_Tiny_RFB_fd(num_classes, is_test=False, device="cuda"):
-    base_net = Mb_Tiny_RFB(2)
+def create_mb_tiny_fd(num_classes, is_test=False, device="cuda"):
+    base_net = Mb_Tiny(2)
     base_net_model = base_net.model  # disable dropout layer
 
     source_layer_indexes = [8, 11, 13]
@@ -126,7 +126,7 @@ def create_Mb_Tiny_RFB_fd(num_classes, is_test=False, device="cuda"):
     )
 
 
-def create_Mb_Tiny_RFB_fd_predictor(
+def create_mb_tiny_fd_predictor(
     net, candidate_size=200, nms_method=None, sigma=0.5, device=None
 ):
     predictor = Predictor(

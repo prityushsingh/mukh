@@ -8,7 +8,7 @@ import shutil
 
 import cv2
 
-from mukh.detection import FaceDetector
+from mukh.face_detection import FaceDetector
 
 # Set up argument parser
 parser = argparse.ArgumentParser(description="Face Detection Example")

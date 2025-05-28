@@ -40,11 +40,22 @@ class MediaPipeFaceDetector(BaseFaceDetector):
             model_selection=model_selection,
         )
 
-    def detect(self, image_path: str) -> List[FaceDetection]:
+    def detect(
+        self,
+        image_path: str,
+        save_csv: bool = False,
+        csv_path: str = "detections.csv",
+        save_annotated: bool = False,
+        output_folder: str = "output",
+    ) -> List[FaceDetection]:
         """Detects faces in the given image using MediaPipe.
 
         Args:
             image_path: Path to the input image.
+            save_csv: Whether to save detection results to CSV file.
+            csv_path: Path where to save the CSV file.
+            save_annotated: Whether to save annotated image with bounding boxes.
+            output_folder: Folder path where to save annotated images.
 
         Returns:
             List[FaceDetection]: List of detected faces, each containing:
@@ -73,68 +84,17 @@ class MediaPipeFaceDetector(BaseFaceDetector):
                 h = int(bbox_rel.height * image_height)
 
                 bbox = BoundingBox(
-                    x1=x, y1=y, x2=x + w, y2=y + h, confidence=detection.score[0]
-                )
+                    x1=x, y1=y, x2=x + w, y2=y + h, confidence=detection.score[0])
+                
 
-                # Extract landmarks
-                landmarks = []
-                for landmark in detection.location_data.relative_keypoints:
-                    x = int(landmark.x * image_width)
-                    y = int(landmark.y * image_height)
-                    landmarks.append([x, y])
+                faces.append(FaceDetection(bbox=bbox))
 
-                faces.append(FaceDetection(bbox=bbox, landmarks=np.array(landmarks)))
+        # Save to CSV if requested
+        if save_csv:
+            self._save_detections_to_csv(faces, image_path, csv_path)
+
+        # Save annotated image if requested
+        if save_annotated:
+            self._save_annotated_image(image, faces, image_path, output_folder)
 
         return faces
-
-    def detect_with_landmarks(
-        self, image_path: str
-    ) -> Tuple[List[FaceDetection], np.ndarray]:
-        """Detects faces and returns annotated image with landmarks.
-
-        Args:
-            image_path: Path to the input image.
-
-        Returns:
-            tuple: Contains:
-                - List[FaceDetection]: List of detected faces
-                - np.ndarray: Copy of input image with detections drawn
-        """
-        # Load image and detect faces
-        image = self._load_image(image_path)
-        faces = self.detect(image_path)
-
-        # Draw detections on image copy
-        annotated_image = self._draw_detections(image, faces)
-        return faces, annotated_image
-
-    def _draw_detections(
-        self, image: np.ndarray, faces: List[FaceDetection]
-    ) -> np.ndarray:
-        """Draws detection results on the image.
-
-        Args:
-            image: Input image as numpy array
-            faces: List of detected faces
-
-        Returns:
-            np.ndarray: Copy of input image with bounding boxes and landmarks drawn
-        """
-        image_copy = image.copy()
-        for face in faces:
-            bbox = face.bbox
-            # Draw bounding box
-            cv2.rectangle(
-                image_copy,
-                (int(bbox.x1), int(bbox.y1)),
-                (int(bbox.x2), int(bbox.y2)),
-                (0, 255, 0),
-                2,
-            )
-
-            # Draw landmarks
-            if face.landmarks is not None:
-                for x, y in face.landmarks:
-                    cv2.circle(image_copy, (int(x), int(y)), 2, (0, 255, 0), 2)
-
-        return image_copy

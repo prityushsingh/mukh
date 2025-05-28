@@ -8,7 +8,7 @@ The model is optimized for mobile devices and provides both bounding box
 detection and 6 facial landmarks.
 """
 
-from typing import List, Tuple
+from typing import List
 
 import cv2
 import numpy as np
@@ -37,6 +37,7 @@ class BlazeFaceDetector(BaseFaceDetector):
         weights_path: str = None,
         anchors_path: str = None,
         confidence_threshold: float = 0.75,
+        device: str = "cpu",
     ):
         """Initializes the BlazeFace detector.
 
@@ -44,25 +45,36 @@ class BlazeFaceDetector(BaseFaceDetector):
             weights_path: Optional custom path to model weights file
             anchors_path: Optional custom path to anchor boxes file
             confidence_threshold: Minimum confidence threshold for detections
+            device: Device to run inference on ('cpu' or 'cuda')
         """
         super().__init__(confidence_threshold)
 
         # Use default paths from package if not provided
         if weights_path is None:
             weights_path = resource_filename(
-                "mukh", "detection/models/blazeface/blazeface.pth"
+                "mukh", "face_detection/models/blazeface/blazeface.pth"
             )
         if anchors_path is None:
             anchors_path = resource_filename(
-                "mukh", "detection/models/blazeface/anchors.npy"
+                "mukh", "face_detection/models/blazeface/anchors.npy"
             )
 
-        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device(device)
         self.net = BlazeFace().to(self.device)
         self.net.load_weights(weights_path)
         self.net.load_anchors(anchors_path)
 
-    def detect(self, image_path: str) -> List[FaceDetection]:
+        # Set minimum score threshold
+        self.net.min_score_thresh = confidence_threshold
+
+    def detect(
+        self,
+        image_path: str,
+        save_csv: bool = False,
+        csv_path: str = "detections.csv",
+        save_annotated: bool = False,
+        output_folder: str = "output",
+    ) -> List[FaceDetection]:
         """Detects faces in the given image.
 
         The image is resized to 128x128 pixels for inference and the results
@@ -70,6 +82,10 @@ class BlazeFaceDetector(BaseFaceDetector):
 
         Args:
             image_path: Path to the input image.
+            save_csv: Whether to save detection results to CSV file.
+            csv_path: Path where to save the CSV file.
+            save_annotated: Whether to save annotated image with bounding boxes.
+            output_folder: Folder path where to save annotated images.
 
         Returns:
             List[FaceDetection]: List of detected faces, each containing:
@@ -101,68 +117,17 @@ class BlazeFaceDetector(BaseFaceDetector):
             y2 = float(detection[2]) * orig_h  # ymax
 
             bbox = BoundingBox(
-                x1=x1, y1=y1, x2=x2, y2=y2, confidence=float(detection[16])
+                x1=int(x1), y1=int(y1), x2=int(x2), y2=int(y2), confidence=detection[16]
             )
 
-            # Extract landmarks and scale back to original size
-            landmarks = []
-            for i in range(6):
-                x = float(detection[4 + i * 2]) * orig_w
-                y = float(detection[4 + i * 2 + 1]) * orig_h
-                landmarks.append([x, y])
+            faces.append(FaceDetection(bbox=bbox))
 
-            faces.append(FaceDetection(bbox=bbox, landmarks=np.array(landmarks)))
+        # Save to CSV if requested
+        if save_csv:
+            self._save_detections_to_csv(faces, image_path, csv_path)
+
+        # Save annotated image if requested
+        if save_annotated:
+            self._save_annotated_image(image, faces, image_path, output_folder)
 
         return faces
-
-    def detect_with_landmarks(
-        self, image_path: str
-    ) -> Tuple[List[FaceDetection], np.ndarray]:
-        """Detects faces and returns annotated image with landmarks.
-
-        Args:
-            image_path: Path to the input image.
-
-        Returns:
-            tuple: Contains:
-                - List[FaceDetection]: List of detected faces
-                - np.ndarray: Copy of input image with detections drawn
-        """
-        # Load image and detect faces
-        image = self._load_image(image_path)
-        faces = self.detect(image_path)
-
-        # Draw detections on image copy
-        annotated_image = self._draw_detections(image, faces)
-        return faces, annotated_image
-
-    def _draw_detections(
-        self, image: np.ndarray, faces: List[FaceDetection]
-    ) -> np.ndarray:
-        """Draws detection results on the image.
-
-        Args:
-            image: Input image as numpy array
-            faces: List of detected faces
-
-        Returns:
-            np.ndarray: Copy of input image with bounding boxes and landmarks drawn
-        """
-        image_copy = image.copy()
-        for face in faces:
-            bbox = face.bbox
-            # Draw bounding box
-            cv2.rectangle(
-                image_copy,
-                (int(bbox.x1), int(bbox.y1)),
-                (int(bbox.x2), int(bbox.y2)),
-                (0, 255, 0),
-                2,
-            )
-
-            # Draw landmarks
-            if face.landmarks is not None:
-                for x, y in face.landmarks:
-                    cv2.circle(image_copy, (int(x), int(y)), 2, (0, 255, 0), 2)
-
-        return image_copy

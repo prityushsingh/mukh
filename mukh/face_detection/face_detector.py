@@ -7,7 +7,7 @@ interface.
 Example:
     Basic usage with default settings:
 
-    >>> from mukh.detection import FaceDetector
+    >>> from mukh.face_detection import FaceDetector
     >>> detector = FaceDetector.create("blazeface")
     >>> faces = detector.detect("image.jpg")
 

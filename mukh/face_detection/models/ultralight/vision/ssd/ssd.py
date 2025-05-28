@@ -13,7 +13,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from mukh.detection.models.ultralight.vision.utils import box_utils
+from mukh.face_detection.models.ultralight.vision.utils import box_utils
 
 GraphPath = namedtuple("GraphPath", ["s0", "name", "s1"])
 

@@ -8,7 +8,7 @@ Original implementation by Linzaer
 """
 
 import os
-from typing import List, Tuple
+from typing import List
 
 import cv2
 import numpy as np
@@ -63,15 +63,16 @@ class UltralightDetector(BaseFaceDetector):
         # Use default paths from package if not provided
         if weights_path is None:
             weights_path = resource_filename(
-                "mukh", "detection/models/ultralight/pretrained/version-RFB-320.pth"
+                "mukh", "face_detection/models/ultralight/pretrained/version-RFB-320.pth"
             )
         if labels_path is None:
             labels_path = resource_filename(
-                "mukh", "detection/models/ultralight/voc-model-labels.txt"
+                "mukh", "face_detection/models/ultralight/voc-model-labels.txt"
             )
 
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.input_size = input_size
+        self.candidate_size = candidate_size
 
         # Define image size before importing predictor
         define_img_size(input_size)
@@ -95,13 +96,19 @@ class UltralightDetector(BaseFaceDetector):
                 self.net, candidate_size=candidate_size, device=self.device
             )
         else:
-            raise ValueError("net_type must be either 'slim' or 'RFB'")
+            raise ValueError(f"Unsupported net_type: {net_type}")
 
-        # Load weights
+        # Load model weights
         self.net.load(weights_path)
-        self.candidate_size = candidate_size
 
-    def detect(self, image_path: str) -> List[FaceDetection]:
+    def detect(
+        self,
+        image_path: str,
+        save_csv: bool = False,
+        csv_path: str = "detections.csv",
+        save_annotated: bool = False,
+        output_folder: str = "output",
+    ) -> List[FaceDetection]:
         """Detects faces in the given image using Ultra-Light model.
 
         The image is resized to self.input_size for inference and results
@@ -109,6 +116,10 @@ class UltralightDetector(BaseFaceDetector):
 
         Args:
             image_path: Path to the input image.
+            save_csv: Whether to save detection results to CSV file.
+            csv_path: Path where to save the CSV file.
+            save_annotated: Whether to save annotated image with bounding boxes.
+            output_folder: Folder path where to save annotated images.
 
         Returns:
             List[FaceDetection]: List of detected faces, each containing:
@@ -140,39 +151,24 @@ class UltralightDetector(BaseFaceDetector):
             box = boxes[i, :].int().tolist()
             # Scale bounding box back to original image size
             bbox = BoundingBox(
-                x1=float(box[0] * width_scale),
-                y1=float(box[1] * height_scale),
-                x2=float(box[2] * width_scale),
-                y2=float(box[3] * height_scale),
-                confidence=float(probs[i]),
+                x1=int(box[0] * width_scale),
+                y1=int(box[1] * height_scale),
+                x2=int(box[2] * width_scale),
+                y2=int(box[3] * height_scale),
+                confidence=probs[i],
             )
             # Ultralight doesn't provide landmarks, so we pass None
-            faces.append(FaceDetection(bbox=bbox, landmarks=None))
+            faces.append(FaceDetection(bbox=bbox))
+
+        # Save to CSV if requested
+        if save_csv:
+            self._save_detections_to_csv(faces, image_path, csv_path)
+
+        # Save annotated image if requested
+        if save_annotated:
+            self._save_annotated_image(image, faces, image_path, output_folder)
 
         return faces
-
-    def detect_with_landmarks(
-        self, image_path: str
-    ) -> Tuple[List[FaceDetection], np.ndarray]:
-        """Detects faces and returns annotated image.
-
-        Note: This model does not provide facial landmarks.
-
-        Args:
-            image_path: Path to the input image.
-
-        Returns:
-            tuple: Contains:
-                - List[FaceDetection]: List of detected faces
-                - np.ndarray: Copy of input image with detections drawn
-        """
-        # Load image and detect faces
-        image = self._load_image(image_path)
-        faces = self.detect(image_path)
-
-        # Draw detections on image copy
-        annotated_image = self._draw_detections(image, faces)
-        return faces, annotated_image
 
     def _draw_detections(
         self, image: np.ndarray, faces: List[FaceDetection]

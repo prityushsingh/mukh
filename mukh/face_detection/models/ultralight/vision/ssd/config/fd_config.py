@@ -7,7 +7,7 @@ Original implementation by Linzaer
 
 import numpy as np
 
-from mukh.detection.models.ultralight.vision.utils.box_utils import generate_priors
+from mukh.face_detection.models.ultralight.vision.utils.box_utils import generate_priors
 
 image_mean_test = image_mean = np.array([127, 127, 127])
 image_std = 128.0
