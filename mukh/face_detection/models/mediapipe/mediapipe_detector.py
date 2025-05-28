@@ -84,8 +84,8 @@ class MediaPipeFaceDetector(BaseFaceDetector):
                 h = int(bbox_rel.height * image_height)
 
                 bbox = BoundingBox(
-                    x1=x, y1=y, x2=x + w, y2=y + h, confidence=detection.score[0])
-                
+                    x1=x, y1=y, x2=x + w, y2=y + h, confidence=detection.score[0]
+                )
 
                 faces.append(FaceDetection(bbox=bbox))
 

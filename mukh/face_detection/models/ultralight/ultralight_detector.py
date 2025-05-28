@@ -63,7 +63,8 @@ class UltralightDetector(BaseFaceDetector):
         # Use default paths from package if not provided
         if weights_path is None:
             weights_path = resource_filename(
-                "mukh", "face_detection/models/ultralight/pretrained/version-RFB-320.pth"
+                "mukh",
+                "face_detection/models/ultralight/pretrained/version-RFB-320.pth",
             )
         if labels_path is None:
             labels_path = resource_filename(
