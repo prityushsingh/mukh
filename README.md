@@ -39,20 +39,39 @@ pip install mukh
 ### Face Detection
 
 ```python
-import cv2
-from mukh.detection import FaceDetector
+from mukh.face_detection import FaceDetector
 
 # Initialize detector
-detection_model = "blazeface" # Available models: "blazeface", "mediapipe", "ultralight"
+detection_model = "mediapipe" # Available models: "blazeface", "mediapipe", "ultralight"
 detector = FaceDetector.create(detection_model)
 
 # Detect faces
-image_path = "path/to/image.jpg"
-faces, annotated_image = detector.detect_with_landmarks(image_path)
+detections = detector.detect(
+    image_path="assets/images/img1.jpg",                       # Path to the image to detect faces in
+    save_csv=True,                                             # Save the detections to a CSV file
+    csv_path=f"output/{detection_model}/detections.csv",       # Path to save the CSV file
+    save_annotated=True,                                       # Save the annotated image
+    output_folder=f"output/detection_model",                   # Path to save the annotated image
+)
+```
+  
+### Face Reenactment
 
-# Save output
-output_path = "path/to/output.jpg"
-cv2.imwrite(output_path, annotated_image)
+```python
+from mukh.face_reenactment import FaceReenactor
+
+# Initialize reenactor
+reenactor_model = "tps" # Available models: "tps"
+reenactor = FaceReenactor.create(reenactor_model)
+
+# Reenact face
+result_path = reenactor.reenact_from_video(
+    source_path="assets/images/img1.jpg",         # Path to the source image
+    driving_video_path="assets/videos/video.mp4", # Path to the driving video
+    output_path=f"output/{reenactor_model}",      # Path to save the reenacted video
+    save_comparison=True,                         # Save the comparison video
+    resize_to_image_resolution=False,             # Resize the reenacted video to the image resolution
+)
 ```
 
 ## Contact
