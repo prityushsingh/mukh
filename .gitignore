@@ -40,6 +40,8 @@ update_package.sh
 temp/
 output*
 *results
+data
+*.csv
 
 # Mac
 .DS_Store
