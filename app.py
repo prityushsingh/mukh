@@ -38,23 +38,37 @@ class GradioApp:
         self,
         image_path: str,
         detection_model: str,
-        save_csv: bool = True,
-        save_annotated: bool = True,
     ) -> Tuple[str, str, str]:
         """Detect faces in an image using the specified model.
 
         Args:
             image_path: Path to the input image
             detection_model: Model to use for detection
-            save_csv: Whether to save CSV results
-            save_annotated: Whether to save annotated image
 
         Returns:
             Tuple of (annotated_image_path, csv_path, results_text)
         """
         try:
-            # Create detector
-            detector = FaceDetector.create(detection_model)
+            # Debug: Print the selected model
+            print(f"Selected detection model: {detection_model}")
+
+            # Validate inputs
+            if not image_path:
+                return None, None, "Error: No image provided"
+
+            if not os.path.exists(image_path):
+                return None, None, f"Error: Image file not found: {image_path}"
+
+            # Create detector with error handling
+            try:
+                detector = FaceDetector.create(detection_model)
+                print(f"Successfully created detector: {type(detector)}")
+            except Exception as e:
+                return (
+                    None,
+                    None,
+                    f"Error creating detector '{detection_model}': {str(e)}",
+                )
 
             # Create output paths
             output_folder = os.path.join(
@@ -62,18 +76,18 @@ class GradioApp:
             )
             csv_path = os.path.join(output_folder, "detections.csv")
 
-            # Detect faces
+            # Detect faces - save CSV and annotated image by default
             detections = detector.detect(
                 image_path=image_path,
-                save_csv=save_csv,
+                save_csv=True,
                 csv_path=csv_path,
-                save_annotated=save_annotated,
+                save_annotated=True,
                 output_folder=output_folder,
             )
 
             # Find annotated image
             annotated_image_path = None
-            if save_annotated:
+            if True:
                 image_name = os.path.basename(image_path)
                 name, ext = os.path.splitext(image_name)
 
@@ -103,7 +117,7 @@ class GradioApp:
                     if annotated_image_path and os.path.exists(annotated_image_path)
                     else None
                 ),
-                csv_path if save_csv and os.path.exists(csv_path) else None,
+                csv_path if True and os.path.exists(csv_path) else None,
                 results_text,
             )
 
@@ -115,7 +129,6 @@ class GradioApp:
         source_image: str,
         driving_video: str,
         reenactor_model: str = "tps",
-        save_comparison: bool = True,
         resize_to_image_resolution: bool = False,
     ) -> Tuple[str, str]:
         """Reenact face from source image using driving video.
@@ -124,7 +137,6 @@ class GradioApp:
             source_image: Path to source image
             driving_video: Path to driving video
             reenactor_model: Model to use for reenactment
-            save_comparison: Whether to save comparison video
             resize_to_image_resolution: Whether to resize to image resolution
 
         Returns:
@@ -143,48 +155,47 @@ class GradioApp:
             source_name = os.path.splitext(os.path.basename(source_image))[0]
             output_path = os.path.join(output_folder, f"{source_name}_reenacted")
 
-            # Perform reenactment
+            # Perform reenactment - save comparison by default
             result_path = reenactor.reenact_from_video(
                 source_path=source_image,
                 driving_video_path=driving_video,
                 output_path=output_path,
-                save_comparison=save_comparison,
+                save_comparison=True,
                 resize_to_image_resolution=resize_to_image_resolution,
             )
 
             # Find comparison video if it was created
             comparison_path = None
-            if save_comparison:
-                # Extract driving video name for pattern matching
-                driving_name = os.path.splitext(os.path.basename(driving_video))[0]
+            # Extract driving video name for pattern matching
+            driving_name = os.path.splitext(os.path.basename(driving_video))[0]
 
-                # The comparison video should be in the same directory as output_path
-                # which is the directory passed to the reenactor
-                search_dir = output_path  # This is the directory passed to reenactor
+            # The comparison video should be in the same directory as output_path
+            # which is the directory passed to the reenactor
+            search_dir = output_path  # This is the directory passed to reenactor
 
-                # Look for comparison video with the exact naming pattern used by TPS
-                comparison_patterns = [
-                    f"comparison_{source_name}_by_{driving_name}.mp4",  # Exact pattern from TPS
-                    f"comparison_{source_name}_by_*.mp4",  # Pattern with wildcard
-                    f"comparison_*.mp4",  # Generic comparison pattern
-                ]
+            # Look for comparison video with the exact naming pattern used by TPS
+            comparison_patterns = [
+                f"comparison_{source_name}_by_{driving_name}.mp4",  # Exact pattern from TPS
+                f"comparison_{source_name}_by_*.mp4",  # Pattern with wildcard
+                f"comparison_*.mp4",  # Generic comparison pattern
+            ]
 
-                import glob
+            import glob
 
+            for pattern in comparison_patterns:
+                comparison_files = glob.glob(os.path.join(search_dir, pattern))
+                if comparison_files:
+                    comparison_path = comparison_files[0]  # Take the first match
+                    break
+
+            # If still not found, check the parent directory of result_path
+            if not comparison_path:
+                result_dir = os.path.dirname(result_path)
                 for pattern in comparison_patterns:
-                    comparison_files = glob.glob(os.path.join(search_dir, pattern))
+                    comparison_files = glob.glob(os.path.join(result_dir, pattern))
                     if comparison_files:
-                        comparison_path = comparison_files[0]  # Take the first match
+                        comparison_path = comparison_files[0]
                         break
-
-                # If still not found, check the parent directory of result_path
-                if not comparison_path:
-                    result_dir = os.path.dirname(result_path)
-                    for pattern in comparison_patterns:
-                        comparison_files = glob.glob(os.path.join(result_dir, pattern))
-                        if comparison_files:
-                            comparison_path = comparison_files[0]
-                            break
 
             return result_path, comparison_path
 
@@ -197,9 +208,6 @@ class GradioApp:
         models_to_use: List[str],
         confidence_threshold: float = 0.5,
         num_frames: int = 11,
-        save_csv: bool = True,
-        save_annotated: bool = True,
-        save_individual_results: bool = True,
     ) -> Tuple[str, str]:
         """Detect deepfakes using multiple models in a pipeline.
 
@@ -208,9 +216,6 @@ class GradioApp:
             models_to_use: List of models to use in pipeline
             confidence_threshold: Confidence threshold for final decision
             num_frames: Number of frames to analyze for videos
-            save_csv: Whether to save CSV results
-            save_annotated: Whether to save annotated media
-            save_individual_results: Whether to save individual model results
 
         Returns:
             Tuple of (annotated_media_path, results_text)
@@ -264,19 +269,19 @@ class GradioApp:
             # Create output paths
             output_folder = os.path.join(self.output_dir, "deepfake_detection")
 
-            # Detect deepfakes
+            # Detect deepfakes - save all outputs by default
             result = pipeline.detect(
                 media_path=media_file,
-                save_csv=save_csv,
-                save_annotated=save_annotated,
+                save_csv=True,
+                save_annotated=True,
                 output_folder=output_folder,
                 num_frames=num_frames,
-                save_individual_results=save_individual_results,
+                save_individual_results=True,
             )
 
             # Find annotated media
             annotated_media_path = None
-            if save_annotated:
+            if True:
                 media_name = os.path.basename(media_file)
                 name, ext = os.path.splitext(media_name)
 
@@ -332,32 +337,195 @@ class GradioApp:
     def create_interface(self) -> gr.Blocks:
         """Create the Gradio interface with all three tasks."""
 
+        # Create a custom theme with better colors for face processing
+        custom_theme = gr.themes.Citrus(
+            primary_hue="slate",
+            secondary_hue="zinc",
+            neutral_hue="gray",
+            font=gr.themes.GoogleFont("Inter"),
+        ).set(
+            button_primary_background_fill="*neutral_800",
+            button_primary_background_fill_hover="*neutral_900",
+        )
+
         with gr.Blocks(
-            title="Mukh: Face Processing Suite", theme=gr.themes.Soft()
+            title="Mukh: Face Processing Suite",
+            theme=custom_theme,
+            css="""
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+            
+            .main-header {
+                text-align: center;
+                padding: 30px 20px;
+                background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #020617 100%);
+                color: white;
+                border-radius: 16px;
+                margin-bottom: 30px;
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .main-header::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+                animation: shimmer 3s infinite;
+            }
+            
+            @keyframes shimmer {
+                0% { left: -100%; }
+                100% { left: 100%; }
+            }
+            
+            .main-header h1 {
+                font-size: 2.5rem;
+                font-weight: 700;
+                margin-bottom: 0.5rem;
+                text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            }
+            
+            .tab-nav {
+                border-radius: 12px;
+                background: linear-gradient(145deg, #374151, #1f2937);
+                padding: 8px;
+                box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+            }
+            
+            .upload-area {
+                border: 2px dashed #6b7280;
+                border-radius: 12px;
+                padding: 30px;
+                transition: all 0.3s ease;
+                background: linear-gradient(145deg, #374151, #1f2937);
+                position: relative;
+            }
+            
+            .upload-area:hover {
+                border-color: #9ca3af;
+                background: linear-gradient(145deg, #4b5563, #374151);
+                transform: translateY(-2px);
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            }
+            
+            .block {
+                background: linear-gradient(145deg, #374151, #1f2937);
+                border-radius: 16px;
+                padding: 24px;
+                margin: 15px 0;
+                border: 1px solid #4b5563;
+                transition: all 0.3s ease;
+            }
+            
+            .block:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            }
+            
+            .input-section {
+                background: linear-gradient(145deg, #374151, #1f2937);
+                border-radius: 16px;
+                padding: 28px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+                border: 1px solid #4b5563;
+                transition: all 0.3s ease;
+            }
+            
+            .input-section:hover {
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            }
+            
+            .output-section {
+                background: linear-gradient(145deg, #1f2937, #111827);
+                border-radius: 16px;
+                padding: 28px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+                border: 1px solid #374151;
+                transition: all 0.3s ease;
+            }
+            
+            .output-section:hover {
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            }
+            
+            button {
+                transition: all 0.3s ease !important;
+                font-weight: 600 !important;
+                letter-spacing: 0.025em !important;
+            }
+            
+            button:hover {
+                transform: translateY(-1px) !important;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+            }
+            
+            .gradio-accordion {
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                background: linear-gradient(145deg, #374151, #1f2937);
+            }
+            
+            .markdown h3 {
+                color: #e5e7eb;
+                font-weight: 600;
+                margin-bottom: 1rem;
+                font-size: 1.25rem;
+            }
+            
+            .task-header {
+                text-align: center;
+                margin: 30px 0;
+                padding: 20px;
+                background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+                border-radius: 12px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+            
+            .task-header h1 {
+                font-size: 2rem;
+                font-weight: 700;
+                color: #f8fafc;
+                text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+                margin-bottom: 0;
+            }
+            """,
         ) as interface:
             gr.Markdown(
                 """
             # 🎭 Mukh: Face Processing Suite
             
             A comprehensive toolkit for face detection, reenactment, and deepfake detection.
-            
-            ---
-            ### 📝 Instructions:
-            
-            **Face Detection**: Upload an image and select a detection model to identify faces.
-            
-            **Face Reenactment**: Upload a source image and driving video to animate the face.
-            
-            **Deepfake Detection**: Upload an image or video to detect if it contains deepfakes using multiple AI models.
-            
-            All results are saved to the `gradio_output` directory.
-            ---
-            """
+            """,
+                elem_classes="main-header",
             )
+
+            with gr.Accordion("📝 Instructions", open=False):
+                gr.Markdown(
+                    """
+                **Face Detection**: Upload an image and select a detection model to identify faces.
+                
+                **Face Reenactment**: Upload a source image and driving video to animate the face.
+                
+                **Deepfake Detection**: Upload an image or video to detect if it contains deepfakes using multiple AI models.
+                
+                All results are saved to the `gradio_output` directory.
+                """
+                )
 
             with gr.Tabs():
                 # Face Detection Tab
                 with gr.TabItem("👤 Face Detection"):
+                    gr.Markdown(
+                        """
+                        # 👤 Face Detection
+                        """,
+                        elem_classes="task-header",
+                    )
                     gr.Markdown(
                         "### Detect faces in images using state-of-the-art models"
                     )
@@ -367,19 +535,14 @@ class GradioApp:
                             face_input_image = gr.Image(
                                 type="filepath", label="Upload Image"
                             )
-                            face_detection_model = gr.Dropdown(
+                            face_detection_model = gr.Radio(
                                 choices=["blazeface", "mediapipe", "ultralight"],
                                 value="mediapipe",
                                 label="Detection Model",
-                            )
-                            face_save_csv = gr.Checkbox(
-                                value=True, label="Save CSV Results"
-                            )
-                            face_save_annotated = gr.Checkbox(
-                                value=True, label="Save Annotated Image"
+                                info="Select the face detection model to use",
                             )
                             face_detect_btn = gr.Button(
-                                "🔍 Detect Faces", variant="primary"
+                                "🔍 Detect Faces", variant="primary", size="lg"
                             )
 
                         with gr.Column():
@@ -389,19 +552,39 @@ class GradioApp:
                             )
                             face_csv_file = gr.File(label="CSV Results", visible=False)
 
+                    # Add this after the radio button definition
+                    def on_model_change(model):
+                        print(f"Model changed to: {model}")
+                        return f"Selected model: {model}"
+
+                    model_debug = gr.Textbox(
+                        label="Debug: Selected Model", visible=False
+                    )
+
+                    face_detection_model.change(
+                        fn=on_model_change,
+                        inputs=[face_detection_model],
+                        outputs=[model_debug],
+                    )
+
                     face_detect_btn.click(
                         fn=self.detect_faces,
                         inputs=[
                             face_input_image,
                             face_detection_model,
-                            face_save_csv,
-                            face_save_annotated,
                         ],
                         outputs=[face_output_image, face_csv_file, face_results_text],
+                        show_progress=True,
                     )
 
                 # Face Reenactment Tab
                 with gr.TabItem("🎬 Face Reenactment"):
+                    gr.Markdown(
+                        """
+                        # 🎬 Face Reenactment
+                        """,
+                        elem_classes="task-header",
+                    )
                     gr.Markdown("### Animate faces using driving videos")
 
                     with gr.Row():
@@ -413,14 +596,11 @@ class GradioApp:
                             reenact_model = gr.Dropdown(
                                 choices=["tps"], value="tps", label="Reenactment Model"
                             )
-                            reenact_save_comparison = gr.Checkbox(
-                                value=True, label="Save Comparison Video"
-                            )
                             reenact_resize_to_image = gr.Checkbox(
                                 value=False, label="Resize to Image Resolution"
                             )
                             reenact_btn = gr.Button(
-                                "🎬 Generate Reenactment", variant="primary"
+                                "🎬 Generate Reenactment", variant="primary", size="lg"
                             )
 
                         with gr.Column():
@@ -437,14 +617,20 @@ class GradioApp:
                             reenact_source_image,
                             reenact_driving_video,
                             reenact_model,
-                            reenact_save_comparison,
                             reenact_resize_to_image,
                         ],
                         outputs=[reenact_output_video, reenact_comparison_video],
+                        show_progress=True,
                     )
 
                 # Deepfake Detection Tab
                 with gr.TabItem("🕵️ Deepfake Detection"):
+                    gr.Markdown(
+                        """
+                        # 🕵️ Deepfake Detection
+                        """,
+                        elem_classes="task-header",
+                    )
                     gr.Markdown("### Detect deepfakes using multiple AI models")
 
                     with gr.Row():
@@ -472,17 +658,8 @@ class GradioApp:
                                 step=1,
                                 label="Number of Frames (for videos)",
                             )
-                            deepfake_save_csv = gr.Checkbox(
-                                value=True, label="Save CSV Results"
-                            )
-                            deepfake_save_annotated = gr.Checkbox(
-                                value=True, label="Save Annotated Media"
-                            )
-                            deepfake_save_individual = gr.Checkbox(
-                                value=True, label="Save Individual Model Results"
-                            )
                             deepfake_detect_btn = gr.Button(
-                                "🕵️ Detect Deepfakes", variant="primary"
+                                "🕵️ Detect Deepfakes", variant="primary", size="lg"
                             )
 
                         with gr.Column():
@@ -498,11 +675,9 @@ class GradioApp:
                             deepfake_models,
                             deepfake_confidence_threshold,
                             deepfake_num_frames,
-                            deepfake_save_csv,
-                            deepfake_save_annotated,
-                            deepfake_save_individual,
                         ],
                         outputs=[deepfake_output_media, deepfake_results_text],
+                        show_progress=True,
                     )
 
         return interface
@@ -522,7 +697,7 @@ def main():
     app = GradioApp()
     app.launch(
         server_name="0.0.0.0",
-        server_port=7860,
+        server_port=7862,
         share=False,
         debug=True,
     )
