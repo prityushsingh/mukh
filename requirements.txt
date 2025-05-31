@@ -10,3 +10,7 @@ scikit-image
 pyyaml
 tqdm
 face-alignment
+facenet-pytorch
+grad-cam
+face_recognition
+efficientnet_pytorch
