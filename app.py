@@ -204,7 +204,8 @@ class GradioApp:
 
     def detect_deepfakes(
         self,
-        media_file: str,
+        image_file: Optional[str],
+        video_file: Optional[str],
         models_to_use: List[str],
         confidence_threshold: float = 0.5,
         num_frames: int = 11,
@@ -212,7 +213,8 @@ class GradioApp:
         """Detect deepfakes using multiple models in a pipeline.
 
         Args:
-            media_file: Path to media file (image or video)
+            image_file: Path to input image (optional)
+            video_file: Path to input video (optional)
             models_to_use: List of models to use in pipeline
             confidence_threshold: Confidence threshold for final decision
             num_frames: Number of frames to analyze for videos
@@ -221,6 +223,15 @@ class GradioApp:
             Tuple of (annotated_media_path, results_text)
         """
         try:
+            # Determine which media file to use
+            media_file = None
+            if image_file and os.path.exists(image_file):
+                media_file = image_file
+            elif video_file and os.path.exists(video_file):
+                media_file = video_file
+            else:
+                return None, "Error: Please upload either an image or video file"
+
             # Configure models based on selection
             model_configs = []
             model_weights = {}
@@ -523,11 +534,9 @@ class GradioApp:
                     gr.Markdown(
                         """
                         # 👤 Face Detection
+                        ### Detect faces in images using state-of-the-art models
                         """,
                         elem_classes="task-header",
-                    )
-                    gr.Markdown(
-                        "### Detect faces in images using state-of-the-art models"
                     )
 
                     with gr.Row():
@@ -582,10 +591,10 @@ class GradioApp:
                     gr.Markdown(
                         """
                         # 🎬 Face Reenactment
+                        ### Animate faces using driving videos
                         """,
                         elem_classes="task-header",
                     )
-                    gr.Markdown("### Animate faces using driving videos")
 
                     with gr.Row():
                         with gr.Column():
@@ -628,16 +637,18 @@ class GradioApp:
                     gr.Markdown(
                         """
                         # 🕵️ Deepfake Detection
+                        ### Detect deepfakes using multiple AI models
                         """,
                         elem_classes="task-header",
                     )
-                    gr.Markdown("### Detect deepfakes using multiple AI models")
 
                     with gr.Row():
                         with gr.Column():
-                            deepfake_input_media = gr.File(
-                                label="Upload Image or Video",
-                                file_types=["image", "video"],
+                            deepfake_input_image = gr.Image(
+                                type="filepath", label="Upload Image", visible=True
+                            )
+                            deepfake_input_video = gr.Video(
+                                label="Upload Video", visible=True
                             )
                             deepfake_models = gr.CheckboxGroup(
                                 choices=["resnet_inception", "resnext", "efficientnet"],
@@ -663,7 +674,9 @@ class GradioApp:
                             )
 
                         with gr.Column():
-                            deepfake_output_media = gr.File(label="Annotated Media")
+                            deepfake_output_media = gr.File(
+                                label="Annotated Media", visible=False
+                            )
                             deepfake_results_text = gr.Textbox(
                                 label="Detection Results", lines=10
                             )
@@ -671,7 +684,8 @@ class GradioApp:
                     deepfake_detect_btn.click(
                         fn=self.detect_deepfakes,
                         inputs=[
-                            deepfake_input_media,
+                            deepfake_input_image,
+                            deepfake_input_video,
                             deepfake_models,
                             deepfake_confidence_threshold,
                             deepfake_num_frames,
@@ -697,7 +711,7 @@ def main():
     app = GradioApp()
     app.launch(
         server_name="0.0.0.0",
-        server_port=7862,
+        server_port=7863,
         share=False,
         debug=True,
     )
