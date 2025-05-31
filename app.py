@@ -225,12 +225,15 @@ class GradioApp:
         try:
             # Determine which media file to use
             media_file = None
+            media_type = None
             if image_file and os.path.exists(image_file):
                 media_file = image_file
+                media_type = "image"
             elif video_file and os.path.exists(video_file):
                 media_file = video_file
+                media_type = "video"
             else:
-                return None, "Error: Please upload either an image or video file"
+                return None, "❌ **Error**: Please upload either an image or video file"
 
             # Configure models based on selection
             model_configs = []
@@ -306,32 +309,139 @@ class GradioApp:
                         output_folder, f"{name}_pipeline_annotated{ext}"
                     )
 
-            # Create results text
+            # Create enhanced results text with better formatting
+            def get_confidence_bar(confidence, width=20):
+                """Create a visual confidence bar."""
+                filled = int(confidence * width)
+                bar = "█" * filled + "░" * (width - filled)
+                return f"[{bar}] {confidence:.1%}"
+
+            def get_risk_level(confidence, is_deepfake):
+                """Determine risk level based on confidence."""
+                if is_deepfake:
+                    if confidence >= 0.8:
+                        return "🔴 **HIGH RISK**"
+                    elif confidence >= 0.6:
+                        return "🟡 **MEDIUM RISK**"
+                    else:
+                        return "🟠 **LOW RISK**"
+                else:
+                    if confidence >= 0.8:
+                        return "🟢 **VERY CONFIDENT**"
+                    elif confidence >= 0.6:
+                        return "🟡 **CONFIDENT**"
+                    else:
+                        return "🟠 **UNCERTAIN**"
+
             if isinstance(result, list):  # Video results
                 deepfake_count = sum(1 for r in result if r.is_deepfake)
                 total_frames = len(result)
                 avg_confidence = sum(r.confidence for r in result) / len(result)
-
-                results_text = f"Video Analysis Results:\n"
-                results_text += f"Total frames analyzed: {total_frames}\n"
-                results_text += f"Deepfake frames detected: {deepfake_count}\n"
-                results_text += (
-                    f"Deepfake percentage: {(deepfake_count/total_frames)*100:.1f}%\n"
-                )
-                results_text += f"Average confidence: {avg_confidence:.3f}\n"
+                deepfake_percentage = (deepfake_count / total_frames) * 100
 
                 # Overall verdict
-                if deepfake_count > total_frames * 0.5:
-                    results_text += f"\n🚨 VERDICT: DEEPFAKE"
+                overall_is_deepfake = deepfake_count > total_frames * 0.5
+                overall_status = "DEEPFAKE" if overall_is_deepfake else "AUTHENTIC"
+                overall_icon = "🚨" if overall_is_deepfake else "✅"
+
+                results_text = f"""# 🎬 **Video Analysis Results**
+
+## 📊 **Summary**
+- **File**: `{os.path.basename(media_file)}`
+- **Media Type**: {media_type.title()}
+- **Models Used**: {', '.join(models_to_use)}
+- **Confidence Threshold**: {confidence_threshold:.1%}
+
+---
+
+## 🎯 **Overall Verdict**
+### {overall_icon} **{overall_status}**
+
+**Confidence**: {get_confidence_bar(avg_confidence)}
+
+---
+
+## 📈 **Detailed Statistics**
+- **Total Frames Analyzed**: {total_frames}
+- **Deepfake Frames Detected**: {deepfake_count}
+- **Deepfake Percentage**: {deepfake_percentage:.1f}%
+- **Average Confidence**: {avg_confidence:.3f}
+
+---
+
+## 🔍 **Frame-by-Frame Analysis**
+"""
+
+                # Add frame-by-frame breakdown for first 10 frames
+                for i, frame_result in enumerate(result[:10]):
+                    status_icon = "🚨" if frame_result.is_deepfake else "✅"
+                    status_text = (
+                        "DEEPFAKE" if frame_result.is_deepfake else "AUTHENTIC"
+                    )
+
+                    results_text += f"""
+**Frame {i+1}**: {status_icon} {status_text}
+- **Confidence**: {get_confidence_bar(frame_result.confidence)}
+- **Model**: {frame_result.model_name}
+"""
+
+                if len(result) > 10:
+                    results_text += f"\n*... and {len(result) - 10} more frames*"
+
+                # Add final recommendation
+                results_text += f"""
+
+---
+
+## 💡 **Recommendation**
+"""
+                if overall_is_deepfake:
+                    results_text += "⚠️ **This video shows strong indicators of being a deepfake.** Exercise caution when sharing or believing its content."
                 else:
-                    results_text += f"\n✅ VERDICT: REAL"
+                    results_text += "✅ **This video appears to be authentic.** However, always verify content from multiple sources."
 
             else:  # Single image result
-                status = "DEEPFAKE" if result.is_deepfake else "REAL"
-                results_text = f"Image Analysis Results:\n"
-                results_text += f"Status: {status}\n"
-                results_text += f"Confidence: {result.confidence:.3f}\n"
-                results_text += f"Model: {result.model_name}\n"
+                status = "DEEPFAKE" if result.is_deepfake else "AUTHENTIC"
+                status_icon = "🚨" if result.is_deepfake else "✅"
+
+                results_text = f"""# 🖼️ **Image Analysis Results**
+
+## 📊 **Summary**
+- **File**: `{os.path.basename(media_file)}`
+- **Media Type**: {media_type.title()}
+- **Models Used**: {', '.join(models_to_use)}
+- **Confidence Threshold**: {confidence_threshold:.1%}
+
+---
+
+## 🎯 **Verdict**
+### {status_icon} **{status}**
+
+**Confidence**: {get_confidence_bar(result.confidence)}
+
+---
+
+## 🔍 **Technical Details**
+- **Primary Model**: {result.model_name}
+- **Raw Confidence Score**: {result.confidence:.6f}
+- **Detection Algorithm**: Pipeline Ensemble
+
+---
+
+## 💡 **Recommendation**
+"""
+                if result.is_deepfake:
+                    results_text += "⚠️ **This image shows indicators of being artificially generated or manipulated.** Verify authenticity through additional means."
+                else:
+                    results_text += "✅ **This image appears to be authentic.** However, sophisticated deepfakes may still evade detection."
+
+                results_text += f"""
+
+---
+
+## ℹ️ **About This Analysis**
+This analysis uses multiple state-of-the-art AI models to detect potential deepfakes. While highly accurate, no detection system is 100% perfect. Always use critical thinking and verify important content through multiple sources.
+"""
 
             return (
                 (
@@ -343,7 +453,7 @@ class GradioApp:
             )
 
         except Exception as e:
-            return None, f"Error: {str(e)}"
+            return None, f"❌ **Error**: {str(e)}"
 
     def create_interface(self) -> gr.Blocks:
         """Create the Gradio interface with all three tasks."""
