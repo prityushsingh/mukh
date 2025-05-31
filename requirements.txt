@@ -14,3 +14,4 @@ facenet-pytorch
 grad-cam
 face_recognition
 efficientnet_pytorch
+gradio
