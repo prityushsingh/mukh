@@ -67,3 +67,22 @@ else:
         f"Result: {'Deepfake' if detections.is_deepfake else 'Real'} "
         f"(confidence: {detections.confidence:.3f})"
     )
+
+
+from mukh.deepfake_detection import DeepfakeDetector
+
+# Create detector
+detector = DeepfakeDetector(
+    model_name="resnet_inception",  # Available models: resnet_inception, resnext, efficientnet
+    confidence_threshold=0.5,  # Confidence threshold for deepfake detection (0.0 to 1.0)
+)
+
+# Detect deepfakes in the media file
+detections = detector.detect(
+    media_path="assets/images/img1.jpg",  # Path to the media file to analyze (image/video)
+    save_csv=True,  # Save the detections to a CSV file
+    csv_path="output/resnet_inception/deepfake_detections.csv",  # Path to save the CSV file
+    save_annotated=True,  # Save the annotated media
+    output_folder="output/resnet_inception",  # Path to save the annotated media
+    num_frames=11,  # Number of equally spaced frames for video analysis
+)
