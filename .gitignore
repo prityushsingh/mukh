@@ -42,6 +42,8 @@ temp/
 *results
 data
 *.csv
+site
+*.pem
 
 # Mac
 .DS_Store
