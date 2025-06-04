@@ -104,6 +104,13 @@ class BlazeFaceDetector(BaseFaceDetector):
         # Get detections
         detections = self.net.predict_on_image(image_rgb)
 
+        # Apply NMS to filter overlapping detections
+        if len(detections) > 0:
+            # Convert to batch format for NMS
+            detections_batch = [detections]
+            filtered_detections = self.net.nms(detections_batch)
+            detections = filtered_detections[0]
+
         # Convert to FaceDetection objects
         faces = []
         for detection in detections:
