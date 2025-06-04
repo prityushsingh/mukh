@@ -27,7 +27,7 @@ parser.add_argument(
 parser.add_argument(
     "--driving_video_path",
     type=str,
-    default="assets/videos/video.mp4",
+    default="assets/videos/video_1sec.mp4",
     help="Path to the driving video.",
 )
 parser.add_argument(

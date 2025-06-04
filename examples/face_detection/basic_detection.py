@@ -14,7 +14,7 @@ parser.add_argument(
     "--detection_model",
     type=str,
     choices=["blazeface", "mediapipe", "ultralight"],
-    default="mediapipe",
+    default="ultralight",
     help="Choose the face detection model to use.",
 )
 

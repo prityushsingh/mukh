@@ -7,6 +7,8 @@ python -m examples.deepfake_detection.detection
 
 import argparse
 
+import torch
+
 from mukh.deepfake_detection import DeepfakeDetector
 
 parser = argparse.ArgumentParser(description="Deepfake Detection Example")
@@ -42,47 +44,15 @@ args = parser.parse_args()
 detector = DeepfakeDetector(
     model_name=args.detection_model,
     confidence_threshold=args.confidence_threshold,
+    device=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
 )
 
 # Detect deepfakes in the media file
 detections = detector.detect(
-    media_path=args.media_path,  # Path to the media file to analyze
+    media_path=args.media_path,  # Path to the media file to analyze (image/video)
     save_csv=True,  # Save the detections to a CSV file
     csv_path=f"output/{args.detection_model}/deepfake_detections.csv",  # Path to save the CSV file
     save_annotated=True,  # Save the annotated media
     output_folder=f"output/{args.detection_model}",  # Path to save the annotated media
     num_frames=args.num_frames,  # Number of equally spaced frames for video analysis
-)
-
-# Print results
-if isinstance(detections, list):
-    print(f"Analyzed {len(detections)} frames from video")
-    for i, detection in enumerate(detections):
-        print(
-            f"Frame {i}: {'Deepfake' if detection.is_deepfake else 'Real'} "
-            f"(confidence: {detection.confidence:.3f})"
-        )
-else:
-    print(
-        f"Result: {'Deepfake' if detections.is_deepfake else 'Real'} "
-        f"(confidence: {detections.confidence:.3f})"
-    )
-
-
-from mukh.deepfake_detection import DeepfakeDetector
-
-# Create detector
-detector = DeepfakeDetector(
-    model_name="resnet_inception",  # Available models: resnet_inception, resnext, efficientnet
-    confidence_threshold=0.5,  # Confidence threshold for deepfake detection (0.0 to 1.0)
-)
-
-# Detect deepfakes in the media file
-detections = detector.detect(
-    media_path="assets/images/img1.jpg",  # Path to the media file to analyze (image/video)
-    save_csv=True,  # Save the detections to a CSV file
-    csv_path="output/resnet_inception/deepfake_detections.csv",  # Path to save the CSV file
-    save_annotated=True,  # Save the annotated media
-    output_folder="output/resnet_inception",  # Path to save the annotated media
-    num_frames=11,  # Number of equally spaced frames for video analysis
 )
