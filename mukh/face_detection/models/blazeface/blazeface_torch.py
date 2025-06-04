@@ -115,6 +115,8 @@ class BlazeFace(nn.Module):
     https://github.com/google/mediapipe/
     """
 
+    input_size = (128, 128)
+
     def __init__(self, back_model=False):
         super(BlazeFace, self).__init__()
 
@@ -303,12 +305,13 @@ class BlazeFace(nn.Module):
 
         return self.predict_on_batch(img.unsqueeze(0))[0]
 
-    def predict_on_batch(self, x):
+    def predict_on_batch(self, x, apply_nms=False):
         """Makes a prediction on a batch of images.
 
         Arguments:
             x: a NumPy array of shape (b, H, W, 3) or a PyTorch tensor of
                shape (b, 3, H, W). The height and width should be 128 pixels.
+            apply_nms: whether to apply non-maximum suppression (default: True)
 
         Returns:
             A list containing a tensor of face detections for each image in
@@ -342,11 +345,34 @@ class BlazeFace(nn.Module):
         # 3. Postprocess the raw predictions:
         detections = self._tensors_to_detections(out[0], out[1], self.anchors)
 
-        # 4. Non-maximum suppression to remove overlapping detections:
+        # 4. Non-maximum suppression to remove overlapping detections (if requested):
+        if apply_nms:
+            filtered_detections = []
+            for i in range(len(detections)):
+                faces = self._weighted_non_max_suppression(detections[i])
+                faces = torch.stack(faces) if len(faces) > 0 else torch.zeros((0, 17))
+                filtered_detections.append(faces)
+            return filtered_detections
+        else:
+            return detections
+
+    def nms(self, detections):
+        """Filters out overlapping detections using non-maximum suppression.
+
+        Args:
+            detections: List of detection tensors, one for each image
+
+        Returns:
+            List of filtered detection tensors
+        """
         filtered_detections = []
         for i in range(len(detections)):
             faces = self._weighted_non_max_suppression(detections[i])
-            faces = torch.stack(faces) if len(faces) > 0 else torch.zeros((0, 17))
+            faces = (
+                torch.stack(faces)
+                if len(faces) > 0
+                else torch.zeros((0, 17), device=self._device())
+            )
             filtered_detections.append(faces)
 
         return filtered_detections
