@@ -50,10 +50,6 @@ class DeepfakeDetector:
         self.confidence_threshold = confidence_threshold
 
         if model_name == "resnet_inception":
-            # Use default model path if not provided
-            if model_path is None:
-                model_path = "/Users/ishandutta/Documents/code/mukh/mukh/deepfake_detection/models/resnet_inception/resnetinceptionv1_epoch_32.pth"
-
             self.detector = ResNetInceptionDetector(
                 model_path=model_path,
                 confidence_threshold=confidence_threshold,

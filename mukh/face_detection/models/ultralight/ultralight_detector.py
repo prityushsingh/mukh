@@ -13,8 +13,8 @@ from typing import List
 import cv2
 import numpy as np
 import torch
-from pkg_resources import resource_filename
 
+from ....core.model_hub import download_ultralight_model
 from ....core.types import BoundingBox, FaceDetection
 from ..base_detector import BaseFaceDetector
 from .vision.ssd.config.fd_config import define_img_size
@@ -60,16 +60,13 @@ class UltralightDetector(BaseFaceDetector):
         """
         super().__init__(confidence_threshold)
 
-        # Use default paths from package if not provided
-        if weights_path is None:
-            weights_path = resource_filename(
-                "mukh",
-                "face_detection/models/ultralight/pretrained/version-RFB-320.pth",
-            )
-        if labels_path is None:
-            labels_path = resource_filename(
-                "mukh", "face_detection/models/ultralight/voc-model-labels.txt"
-            )
+        # Download models from Hugging Face if not provided
+        if weights_path is None or labels_path is None:
+            try:
+                model_variant = f"{net_type}-{input_size}"
+                weights_path, labels_path = download_ultralight_model(model_variant)
+            except Exception as e:
+                raise Exception(f"Failed to download UltraLight models: {str(e)}")
 
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.input_size = input_size

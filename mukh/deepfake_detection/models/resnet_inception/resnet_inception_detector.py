@@ -19,6 +19,7 @@ from pytorch_grad_cam import GradCAM
 from pytorch_grad_cam.utils.image import show_cam_on_image
 from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
 
+from ....core.model_hub import download_resnet_inception_model
 from ....core.types import DeepfakeDetection
 from ..base import BaseDeepfakeDetector
 
@@ -38,14 +39,14 @@ class ResNetInceptionDetector(BaseDeepfakeDetector):
 
     def __init__(
         self,
-        model_path: str = "/Users/ishandutta/Documents/code/mukh/mukh/deepfake_detection/models/resnet_inception/resnetinceptionv1_epoch_32.pth",
+        model_path: str = None,
         confidence_threshold: float = 0.5,
         device: str = None,
     ):
         """Initializes the ResNet Inception deepfake detector.
 
         Args:
-            model_path: Path to the trained model checkpoint
+            model_path: Path to the trained model checkpoint. If None, downloads from Hugging Face.
             confidence_threshold: Minimum confidence threshold for detections
             device: Device to run inference on ('cpu' or 'cuda'). Auto-detected if None
         """
@@ -70,6 +71,13 @@ class ResNetInceptionDetector(BaseDeepfakeDetector):
         )
 
         # Load the trained weights
+
+        if model_path is None:
+            try:
+                model_path = download_resnet_inception_model()
+            except Exception as e:
+                raise Exception(f"Failed to download ResNet Inception model: {str(e)}")
+
         checkpoint = torch.load(model_path, map_location=self.device)
         self.model.load_state_dict(checkpoint["model_state_dict"])
         self.model.to(self.device)

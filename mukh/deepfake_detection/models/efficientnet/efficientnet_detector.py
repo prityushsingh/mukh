@@ -173,20 +173,16 @@ class EfficientNetDetector(BaseDeepfakeDetector):
             numpy.ndarray: Cropped face image, or None if no face found.
         """
         try:
-            from mukh.deepfake_detection.models.efficientnet.blazeface import (
-                BlazeFace,
-                FaceExtractor,
-            )
+            from mukh.core import download_blazeface_models
+            from mukh.face_detection.models.blazeface import BlazeFace, FaceExtractor
 
             # Initialize BlazeFace if not already done
             if not hasattr(self, "face_extractor"):
                 facedet = BlazeFace().to(self.device)
-                facedet.load_weights(
-                    "mukh/deepfake_detection/models/efficientnet/blazeface/blazeface.pth"
-                )
-                facedet.load_anchors(
-                    "mukh/deepfake_detection/models/efficientnet/blazeface/anchors.npy"
-                )
+                # Download and get paths for the BlazeFace models
+                weights_path, anchors_path = download_blazeface_models()
+                facedet.load_weights(weights_path)
+                facedet.load_anchors(anchors_path)
                 self.face_extractor = FaceExtractor(facedet=facedet)
 
             # Convert numpy to PIL if needed
@@ -202,6 +198,9 @@ class EfficientNetDetector(BaseDeepfakeDetector):
             else:
                 return None
 
+        except ImportError:
+            print("BlazeFace not available, skipping BlazeFace extraction")
+            return None
         except Exception as e:
             print(f"BlazeFace extraction failed: {e}")
             return None

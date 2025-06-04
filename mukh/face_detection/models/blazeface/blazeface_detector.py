@@ -13,8 +13,8 @@ from typing import List
 import cv2
 import numpy as np
 import torch
-from pkg_resources import resource_filename
 
+from ....core.model_hub import download_blazeface_models
 from ....core.types import BoundingBox, FaceDetection
 from ..base_detector import BaseFaceDetector
 from .blazeface_torch import BlazeFace
@@ -49,15 +49,12 @@ class BlazeFaceDetector(BaseFaceDetector):
         """
         super().__init__(confidence_threshold)
 
-        # Use default paths from package if not provided
-        if weights_path is None:
-            weights_path = resource_filename(
-                "mukh", "face_detection/models/blazeface/blazeface.pth"
-            )
-        if anchors_path is None:
-            anchors_path = resource_filename(
-                "mukh", "face_detection/models/blazeface/anchors.npy"
-            )
+        # Download models from Hugging Face if not provided
+        if weights_path is None or anchors_path is None:
+            try:
+                weights_path, anchors_path = download_blazeface_models()
+            except Exception as e:
+                raise Exception(f"Failed to download BlazeFace models: {str(e)}")
 
         self.device = torch.device(device)
         self.net = BlazeFace().to(self.device)

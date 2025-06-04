@@ -6,7 +6,7 @@ import numpy as np
 import torch
 from PIL import Image
 
-from mukh.deepfake_detection.models.efficientnet.blazeface import BlazeFace
+from .blazeface_torch import BlazeFace
 
 
 class FaceExtractor:

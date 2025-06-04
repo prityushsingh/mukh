@@ -21,6 +21,7 @@ from typing import Any, Dict, List, Literal, Optional, Tuple
 
 import numpy as np
 
+from ..core.model_hub import download_reenactment_model
 from .models.base_reenactor import BaseFaceReenactor
 from .models.thin_plate_spline.tps_reenactor import ThinPlateSplineReenactor
 
@@ -38,6 +39,9 @@ class FaceReenactor:
     def create(
         model: ReenactorType,
         model_path: Optional[str] = None,
+        config_path: Optional[
+            str
+        ] = "mukh/reenactment/models/thin_plate_spline/config/vox-256.yaml",
         device: str = "cpu",
         **kwargs,
     ) -> BaseFaceReenactor:
@@ -46,8 +50,8 @@ class FaceReenactor:
         Args:
             model: The type of reenactor to create. Currently supports: "tps"
                 (Thin Plate Spline).
-            model_path: Path to the model weights. If None, uses the default path
-                for the specified model.
+            model_path: Path to the model weights. If None, downloads from Hugging Face.
+            config_path: Path to the config file. Defaults to "mukh/reenactment/models/thin_plate_spline/config/vox-256.yaml".
             device: Device to run inference on ('cpu', 'cuda'). Defaults to 'cpu'.
             **kwargs: Additional model-specific parameters.
 
@@ -57,40 +61,33 @@ class FaceReenactor:
         Raises:
             ValueError: If the specified model type is not supported.
         """
-        # Define default model paths and configurations
-        model_configs = {
-            "tps": {
-                "model_path": "mukh/reenactment/models/thin_plate_spline/vox.pth.tar",
-                "config_path": "mukh/reenactment/models/thin_plate_spline/config/vox-256.yaml",
-                "class": ThinPlateSplineReenactor,
-            }
-        }
+        # Define available models and their configurations
+        available_models = ["tps"]
 
-        if model not in model_configs:
+        if model not in available_models:
             raise ValueError(
                 f"Unknown reenactor model: {model}. "
-                f"Available models: {list(model_configs.keys())}"
+                f"Available models: {available_models}"
             )
 
-        # Use default model path if none provided
+        # Download model checkpoint from Hugging Face if not provided
         if model_path is None:
-            model_path = model_configs[model]["model_path"]
+            try:
+                model_path = download_reenactment_model("vox")
+            except Exception as e:
+                raise Exception(f"Failed to download reenactment model: {str(e)}")
 
         # Create the reenactor instance
-        config = model_configs[model]
-        reenactor_class = config["class"]
-
-        # For TPS model specifically
         if model == "tps":
-            return reenactor_class(
+            return ThinPlateSplineReenactor(
                 model_path=model_path,
-                config_path=config["config_path"],
+                config_path=config_path,
                 device=device,
                 **kwargs,
             )
 
-        # Generic case for other models
-        return reenactor_class(model_path=model_path, device=device, **kwargs)
+        # This should never be reached due to the check above
+        raise ValueError(f"Model {model} is not implemented yet")
 
     @staticmethod
     def list_available_models() -> List[str]:

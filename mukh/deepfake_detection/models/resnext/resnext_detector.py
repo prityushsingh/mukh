@@ -21,6 +21,7 @@ from pytorch_grad_cam.utils.image import show_cam_on_image
 from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
 from torchvision import models, transforms
 
+from ....core.model_hub import download_resnext_model
 from ....core.types import DeepfakeDetection
 from ..base import BaseDeepfakeDetector
 
@@ -148,6 +149,14 @@ class ResNeXtDetector(BaseDeepfakeDetector):
 
         # Load the trained weights if provided
         if model_path and os.path.exists(model_path):
+            checkpoint = torch.load(model_path, map_location=self.device)
+            self.model.load_state_dict(checkpoint)
+        else:
+            try:
+                model_path = download_resnext_model()
+            except Exception as e:
+                raise Exception(f"Failed to download ResNeXt model: {str(e)}")
+
             checkpoint = torch.load(model_path, map_location=self.device)
             self.model.load_state_dict(checkpoint)
 
@@ -318,14 +327,6 @@ class ResNeXtDetector(BaseDeepfakeDetector):
 
         # Save explainability visualization if requested
         if save_annotated:
-            if self.model_variant == "resnext":
-                self._save_lstm_visualization(
-                    input_tensor, image, image_path, output_folder
-                )
-            else:
-                self._save_explainability_visualization(
-                    input_tensor, image, image_path, output_folder
-                )
             self._save_annotated_image(image, detection, image_path, output_folder)
 
         # Save to CSV if requested
@@ -405,71 +406,6 @@ class ResNeXtDetector(BaseDeepfakeDetector):
 
         return detections
 
-    def _save_lstm_visualization(
-        self,
-        sequence: torch.Tensor,
-        original_image: np.ndarray,
-        image_path: str,
-        output_folder: str,
-    ) -> None:
-        """Saves visualization for LSTM model using Class Activation Maps.
-
-        Args:
-            sequence: Input sequence tensor
-            original_image: Original image for visualization overlay
-            image_path: Path to the original image
-            output_folder: Directory to save visualizations
-        """
-        try:
-            # Create output directory
-            os.makedirs(output_folder, exist_ok=True)
-
-            # Get model weights for CAM
-            weight_softmax = self.model.linear1.weight.detach().cpu().numpy()
-
-            # Get prediction
-            probabilities = self.softmax(self._last_logits)
-            idx = np.argmax(probabilities.detach().cpu().numpy())
-
-            # Generate Class Activation Map
-            fmap = self._last_fmap
-            bz, nc, h, w = fmap.shape
-            cam = np.dot(
-                fmap[-1].detach().cpu().numpy().reshape((nc, h * w)).T,
-                weight_softmax[idx, :].T,
-            )
-            cam = cam.reshape(h, w)
-            cam = cam - np.min(cam)
-            cam_img = cam / np.max(cam)
-            cam_resized = cv2.resize(cam_img, (self.im_size, self.im_size))
-
-            # Create heatmap
-            heatmap = cv2.applyColorMap(cam_resized, cv2.COLORMAP_JET)
-
-            # Get original image for overlay
-            original_img = self._tensor_to_image(sequence[:, -1, :, :, :])
-
-            # Create overlay
-            result = heatmap * 0.5 + original_img * 0.8 * 255
-
-            # Save images
-            image_name = os.path.basename(image_path)
-            name, _ = os.path.splitext(image_name)
-
-            heatmap_path = os.path.join(output_folder, f"{name}_resnext_heatmap.jpg")
-            face_path = os.path.join(output_folder, f"{name}_resnext_face.jpg")
-
-            cv2.imwrite(
-                heatmap_path, cv2.cvtColor(result.astype(np.uint8), cv2.COLOR_RGB2BGR)
-            )
-            cv2.imwrite(
-                face_path,
-                cv2.cvtColor((original_img * 255).astype(np.uint8), cv2.COLOR_RGB2BGR),
-            )
-
-        except Exception as e:
-            print(f"Error generating LSTM visualization: {e}")
-
     def _tensor_to_image(self, tensor: torch.Tensor) -> np.ndarray:
         """Convert tensor to displayable image.
 
@@ -486,57 +422,3 @@ class ResNeXtDetector(BaseDeepfakeDetector):
         image = image.transpose(1, 2, 0)
         image = image.clip(0, 1)
         return image
-
-    def _save_explainability_visualization(
-        self,
-        input_tensor: torch.Tensor,
-        original_image: np.ndarray,
-        image_path: str,
-        output_folder: str,
-    ) -> None:
-        """Saves explainability visualization using GradCAM.
-
-        Args:
-            input_tensor: Preprocessed input tensor for model
-            original_image: Original image for visualization overlay
-            image_path: Path to the original image
-            output_folder: Directory to save visualizations
-        """
-        try:
-            # Generate GradCAM visualization
-            # Use the last convolutional layer before the final classifier
-            if self.model_variant == "resnext50_32x4d":
-                target_layers = [self.model.layer4[-1]]
-            else:  # resnext101_32x8d
-                target_layers = [self.model.layer4[-1]]
-
-            cam = GradCAM(model=self.model, target_layers=target_layers)
-            targets = [ClassifierOutputTarget(0)]
-
-            grayscale_cam = cam(
-                input_tensor=input_tensor, targets=targets, eigen_smooth=True
-            )
-            grayscale_cam = grayscale_cam[0, :]
-
-            # Prepare image for visualization
-            image_for_viz = cv2.resize(original_image, (224, 224))
-            image_for_viz = cv2.cvtColor(image_for_viz, cv2.COLOR_BGR2RGB)
-            image_for_viz = image_for_viz.astype(np.float32) / 255.0
-
-            visualization = show_cam_on_image(
-                image_for_viz, grayscale_cam, use_rgb=True
-            )
-
-            # Create output directory
-            os.makedirs(output_folder, exist_ok=True)
-
-            # Save original image
-            image_name = os.path.basename(image_path)
-            name, _ = os.path.splitext(image_name)
-
-            # Save explainability visualization
-            viz_path = os.path.join(output_folder, f"{name}_resnext_explainability.jpg")
-            cv2.imwrite(viz_path, cv2.cvtColor(visualization, cv2.COLOR_RGB2BGR))
-
-        except Exception as e:
-            print(f"Error generating explainability visualization: {e}")
