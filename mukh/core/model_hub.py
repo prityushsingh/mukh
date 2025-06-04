@@ -143,7 +143,7 @@ def download_reenactment_model(model_name: str = "vox") -> str:
     """Download reenactment model checkpoint.
 
     Downloads only the model checkpoint from public repository without requiring authentication.
-    Config files remain bundled with the package.
+    Config files are downloaded separately using download_reenactment_config().
 
     Args:
         model_name: Model name to download ("vox", "ted", "taichi")
@@ -163,6 +163,47 @@ def download_reenactment_model(model_name: str = "vox") -> str:
     except Exception as e:
         raise Exception(
             f"Failed to download reenactment model for {model_name}: {str(e)}"
+        )
+
+
+def download_reenactment_config(model_name: str = "vox") -> str:
+    """Download reenactment model config file.
+
+    Downloads the configuration file for the specified reenactment model from
+    public repository without requiring authentication.
+
+    Args:
+        model_name: Model name to download config for ("vox", "ted", "taichi", "mgif")
+
+    Returns:
+        Local path to the downloaded config file
+
+    Raises:
+        Exception: If download fails
+    """
+    try:
+        # Map model names to their corresponding config files
+        config_mapping = {
+            "vox": "vox-256.yaml",
+            "ted": "ted-384.yaml",
+            "taichi": "taichi-256.yaml",
+            "mgif": "mgif-256.yaml",
+        }
+
+        if model_name not in config_mapping:
+            raise ValueError(
+                f"Unknown model name: {model_name}. "
+                f"Available models: {list(config_mapping.keys())}"
+            )
+
+        config_filename = config_mapping[model_name]
+        config_path = download_model(
+            config_filename, subfolder="face_reenactment/thin_plate_spline/config"
+        )
+        return config_path
+    except Exception as e:
+        raise Exception(
+            f"Failed to download reenactment config for {model_name}: {str(e)}"
         )
 
 

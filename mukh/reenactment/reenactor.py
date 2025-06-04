@@ -21,7 +21,7 @@ from typing import Any, Dict, List, Literal, Optional, Tuple
 
 import numpy as np
 
-from ..core.model_hub import download_reenactment_model
+from ..core.model_hub import download_reenactment_config, download_reenactment_model
 from .models.base_reenactor import BaseFaceReenactor
 from .models.thin_plate_spline.tps_reenactor import ThinPlateSplineReenactor
 
@@ -39,9 +39,8 @@ class FaceReenactor:
     def create(
         model: ReenactorType,
         model_path: Optional[str] = None,
-        config_path: Optional[
-            str
-        ] = "mukh/reenactment/models/thin_plate_spline/config/vox-256.yaml",
+        config_path: Optional[str] = None,
+        model_name: str = "vox",
         device: str = "cpu",
         **kwargs,
     ) -> BaseFaceReenactor:
@@ -51,7 +50,9 @@ class FaceReenactor:
             model: The type of reenactor to create. Currently supports: "tps"
                 (Thin Plate Spline).
             model_path: Path to the model weights. If None, downloads from Hugging Face.
-            config_path: Path to the config file. Defaults to "mukh/reenactment/models/thin_plate_spline/config/vox-256.yaml".
+            config_path: Path to the config file. If None, downloads from Hugging Face.
+            model_name: Name of the model to download ("vox", "ted", "taichi", "mgif").
+                Defaults to "vox".
             device: Device to run inference on ('cpu', 'cuda'). Defaults to 'cpu'.
             **kwargs: Additional model-specific parameters.
 
@@ -73,9 +74,16 @@ class FaceReenactor:
         # Download model checkpoint from Hugging Face if not provided
         if model_path is None:
             try:
-                model_path = download_reenactment_model("vox")
+                model_path = download_reenactment_model(model_name)
             except Exception as e:
                 raise Exception(f"Failed to download reenactment model: {str(e)}")
+
+        # Download config file from Hugging Face if not provided
+        if config_path is None:
+            try:
+                config_path = download_reenactment_config(model_name)
+            except Exception as e:
+                raise Exception(f"Failed to download reenactment config: {str(e)}")
 
         # Create the reenactor instance
         if model == "tps":
