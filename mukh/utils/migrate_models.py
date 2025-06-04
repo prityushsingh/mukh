@@ -2,14 +2,14 @@
 Compact model migration script for Hugging Face Hub.
 
 Usage:
-    python migrate_models.py --upload SOURCE TARGET REPO
-    python migrate_models.py --scan DIR
-    python migrate_models.py --clean DIR
-    python migrate_models.py --patterns PATTERN1 PATTERN2
+    python mukh/utils/migrate_models.py --upload SOURCE TARGET REPO
+    python mukh/utils/migrate_models.py --scan DIR
+    python mukh/utils/migrate_models.py --clean DIR
+    python mukh/utils/migrate_models.py --patterns PATTERN1 PATTERN2
 
 Example:
-    python migrate_models.py --upload mukh/face_detection/models/blazeface face_detection/blazeface ishandutta/mukh-models
-    python migrate_models.py --patterns "*.pth" "*.bin" "*.safetensors" "*.onnx" "*.npy" "*.txt" "*.tar" "*.pt"
+    python mukh/utils/migrate_models.py --upload mukh/face_detection/models/blazeface face_detection/blazeface ishandutta/mukh-models
+    python mukh/utils/migrate_models.py --patterns "*.pth" "*.bin" "*.safetensors" "*.onnx" "*.npy" "*.txt" "*.tar" "*.pt"
 """
 
 import argparse
