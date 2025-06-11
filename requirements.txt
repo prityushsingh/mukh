@@ -16,3 +16,4 @@ face_recognition
 efficientnet_pytorch
 gradio
 huggingface_hub>=0.16.0
+albumentations
