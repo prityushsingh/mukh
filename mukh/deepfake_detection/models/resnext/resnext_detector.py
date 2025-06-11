@@ -1,7 +1,6 @@
 """ResNeXt deepfake detection model implementation.
 
-This module implements a deepfake detection model using ResNeXt architecture
-with explainability features through GradCAM visualization.
+This module implements a deepfake detection model using ResNeXt architecture.
 
 GitHub: https://github.com/abhijithjadhav/Deepfake_detection_using_deep_learning
 """
@@ -76,7 +75,7 @@ class ResNeXtDetector(BaseDeepfakeDetector):
     """ResNeXt deepfake detector implementation.
 
     A deepfake detection model using ResNeXt architecture with LSTM for temporal
-    modeling and explainability features through GradCAM visualization.
+    modeling.
 
     Attributes:
         device: PyTorch device (CPU/CUDA) for model execution
@@ -278,20 +277,12 @@ class ResNeXtDetector(BaseDeepfakeDetector):
             is_deepfake = deepfake_prob > real_prob
             confidence = max(deepfake_prob, real_prob)
 
-            # Store feature maps for visualization
-            self._last_fmap = fmap
-            self._last_logits = logits
-
             detection = DeepfakeDetection(
                 frame_number=0,  # Single image, so frame 0
                 is_deepfake=is_deepfake,
                 confidence=confidence,
                 model_name=f"{self.model_variant}",
             )
-
-        # Save explainability visualization if requested
-        if save_annotated:
-            self._save_annotated_image(image, detection, image_path, output_folder)
 
         # Save to CSV if requested
         if save_csv:
@@ -357,11 +348,11 @@ class ResNeXtDetector(BaseDeepfakeDetector):
                 print(f"Skipping frame {frame_number} due to error: {e}")
                 continue
 
-        # Save annotated video if requested
+        # Save annotated video
         if save_annotated and detections:
             self._save_annotated_video(video_path, detections, output_folder)
 
-        # Save to CSV if requested
+        # Save to CSV
         if save_csv and detections:
             self._save_detections_to_csv(detections, video_path, csv_path)
 
