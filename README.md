@@ -26,7 +26,8 @@ Mukh (मुख, meaning "face" in Sanskrit) is a comprehensive face analysis li
 ## Currently Supported Tasks
 
 - Face Detection
-- Facial Landmark Prediction
+- Face Reenactment
+- Deepfake Detection
 
 ## Installation
 
@@ -42,7 +43,7 @@ pip install mukh
 from mukh.face_detection import FaceDetector
 
 # Initialize detector
-detection_model = "mediapipe" # Available models: "blazeface", "mediapipe", "ultralight"
+detection_model = "mediapipe" # Other models: "blazeface", "ultralight"
 detector = FaceDetector.create(detection_model)
 
 # Detect faces
@@ -71,6 +72,76 @@ result_path = reenactor.reenact_from_video(
     output_path=f"output/{reenactor_model}",      # Path to save the reenacted video
     save_comparison=True,                         # Save the comparison video
     resize_to_image_resolution=False,             # Resize the reenacted video to the image resolution
+)
+```
+
+### Deepfake Detection
+  
+```python
+import torch
+from mukh.deepfake_detection import DeepfakeDetector
+
+# Initialize detector
+detection_model = "efficientnet"    # Other models "resnet_inception", "resnext"
+
+detector = DeepfakeDetector(
+    model_name=detection_model,
+    confidence_threshold=0.5,
+    device=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
+)
+# Detect deepfakes 
+
+media_path = "assets/images/img1.jpg" # Or pass a video path
+
+detections = detector.detect(
+    media_path=media_path,  # Path to the media file (image/video)
+    save_csv=True,          # Save the detections to a CSV file
+    csv_path=f"output/{detection_model}/deepfake_detections.csv",  # Path to save the CSV file
+    save_annotated=True,    # Save the annotated media
+    output_folder=f"output/{args.detection_model}",  # Path to save the annotated media
+    num_frames=11,          # Number of equally spaced frames for video analysis
+)
+
+```
+   
+### Deepfake Detection Pipeline
+  
+```python
+from mukh.pipelines.deepfake_detection import DeepfakeDetectionPipeline
+
+# Configure models
+model_configs = [
+    {
+        "name": "resnet_inception",
+        "confidence_threshold": 0.4,
+    },
+    {
+        "name": "resnext",
+        "model_variant": "resnext",
+        "confidence_threshold": 0.5,
+    },
+    {
+        "name": "efficientnet",
+        "net_model": "EfficientNetB4",
+        "confidence_threshold": 0.6,
+    },
+]
+
+# Create pipeline with weighted averaging
+model_weights = {"resnet_inception": 0.4, "resnext": 0.3, "efficientnet": 0.3}
+
+pipeline = DeepfakeDetectionPipeline(
+    model_configs=model_configs, model_weights=model_weights, confidence_threshold=0.5
+)
+
+media_path = "assets/images/img1.jpg" # Or pass a video path
+
+# Detect deepfakes
+result = pipeline.detect(
+    media_path=media_path,
+    save_csv=True,
+    save_annotated=True,
+    save_individual_results=True,
 )
 ```
 
