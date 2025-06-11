@@ -255,7 +255,10 @@ class ResNetInceptionDetector(BaseDeepfakeDetector):
         try:
             # Generate GradCAM visualization
             target_layers = [self.model.block8.branch1[-1]]
-            cam = GradCAM(model=self.model, target_layers=target_layers)
+            use_cuda = True if self.device.type == "cuda" else False
+            cam = GradCAM(
+                model=self.model, target_layers=target_layers, use_cuda=use_cuda
+            )
             targets = [ClassifierOutputTarget(0)]
 
             grayscale_cam = cam(
