@@ -9,16 +9,11 @@ GitHub: https://github.com/abhijithjadhav/Deepfake_detection_using_deep_learning
 import os
 from typing import List
 
-import cv2
 import face_recognition
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from PIL import Image
-from pytorch_grad_cam import GradCAM
-from pytorch_grad_cam.utils.image import show_cam_on_image
-from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
 from torchvision import models, transforms
 
 from ....core.model_hub import download_resnext_model
@@ -99,7 +94,7 @@ class ResNeXtDetector(BaseDeepfakeDetector):
         confidence_threshold: float = 0.5,
         device: str = None,
         model_variant: str = "resnext",
-        sequence_length: int = 20,
+        sequence_length: int = 60,
         im_size: int = 112,
     ):
         """Initializes the ResNeXt deepfake detector.
@@ -108,7 +103,7 @@ class ResNeXtDetector(BaseDeepfakeDetector):
             model_path: Path to the trained model checkpoint
             confidence_threshold: Minimum confidence threshold for detections
             device: Device to run inference on ('cpu' or 'cuda'). Auto-detected if None
-            model_variant: Model variant ('lstm_resnext' or 'resnext50_32x4d', 'resnext101_32x8d')
+            model_variant: Model variant. Default is 'resnext'
             sequence_length: Number of frames in sequence for LSTM model
             im_size: Input image size for preprocessing
         """
@@ -174,14 +169,6 @@ class ResNeXtDetector(BaseDeepfakeDetector):
         """
         if self.model_variant == "resnext":
             model = ResNeXtModel(num_classes=2)
-        elif self.model_variant == "resnext50_32x4d":
-            model = models.resnext50_32x4d(pretrained=True)
-            num_features = model.fc.in_features
-            model.fc = nn.Linear(num_features, 1)
-        elif self.model_variant == "resnext101_32x8d":
-            model = models.resnext101_32x8d(pretrained=True)
-            num_features = model.fc.in_features
-            model.fc = nn.Linear(num_features, 1)
         else:
             raise ValueError(f"Unsupported model variant: {self.model_variant}")
 
@@ -252,27 +239,6 @@ class ResNeXtDetector(BaseDeepfakeDetector):
         if self.model_variant == "resnext":
             # Use sequence-based preprocessing for LSTM model
             return self._create_sequence(image)
-        else:
-            # Standard preprocessing for non-LSTM models
-            # Resize to 224x224 (standard for ResNeXt)
-            image = cv2.resize(image, (224, 224))
-
-            # Convert BGR to RGB if needed
-            if len(image.shape) == 3 and image.shape[2] == 3:
-                image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-            # Normalize to [0, 1]
-            image = image.astype(np.float32) / 255.0
-
-            # Apply ImageNet normalization
-            mean = np.array([0.485, 0.456, 0.406])
-            std = np.array([0.229, 0.224, 0.225])
-            image = (image - mean) / std
-
-            # Convert to tensor and add batch dimension
-            tensor = torch.from_numpy(image.transpose(2, 0, 1)).unsqueeze(0)
-
-            return tensor.to(self.device)
 
     def detect_image(
         self,
@@ -302,27 +268,25 @@ class ResNeXtDetector(BaseDeepfakeDetector):
 
         # Make prediction
         with torch.no_grad():
-            if self.model_variant == "resnext":
-                fmap, logits = self.model(input_tensor)
-                probabilities = self.softmax(logits)
-                _, prediction = torch.max(logits, 1)
+            fmap, logits = self.model(input_tensor)
+            probabilities = self.softmax(logits)
+            _, prediction = torch.max(logits, 1)
 
-                is_deepfake = prediction.item() == 1
-                confidence = probabilities[0, int(prediction.item())].item()
+            deepfake_prob = probabilities[0, 0].item()
+            real_prob = probabilities[0, 1].item()
 
-                # Store feature maps for visualization
-                self._last_fmap = fmap
-                self._last_logits = logits
-            else:
-                output = torch.sigmoid(self.model(input_tensor).squeeze(0))
-                is_deepfake = output.item() >= self.confidence_threshold
-                confidence = output.item() if is_deepfake else (1 - output.item())
+            is_deepfake = deepfake_prob > real_prob
+            confidence = max(deepfake_prob, real_prob)
+
+            # Store feature maps for visualization
+            self._last_fmap = fmap
+            self._last_logits = logits
 
             detection = DeepfakeDetection(
                 frame_number=0,  # Single image, so frame 0
                 is_deepfake=is_deepfake,
                 confidence=confidence,
-                model_name=f"ResNeXt-{self.model_variant}",
+                model_name=f"{self.model_variant}",
             )
 
         # Save explainability visualization if requested
@@ -369,32 +333,29 @@ class ResNeXtDetector(BaseDeepfakeDetector):
 
                 # Make prediction
                 with torch.no_grad():
-                    if self.model_variant == "resnext":
-                        fmap, logits = self.model(input_tensor)
-                        probabilities = self.softmax(logits)
-                        _, prediction = torch.max(logits, 1)
+                    fmap, logits = self.model(input_tensor)
+                    probabilities = self.softmax(logits)
+                    _, prediction = torch.max(logits, 1)
 
-                        is_deepfake = prediction.item() == 1
-                        confidence = probabilities[0, int(prediction.item())].item()
-                    else:
-                        output = torch.sigmoid(self.model(input_tensor).squeeze(0))
-                        is_deepfake = output.item() >= self.confidence_threshold
-                        confidence = (
-                            output.item() if is_deepfake else (1 - output.item())
-                        )
+                    deepfake_prob = probabilities[0, 0].item()
+                    real_prob = probabilities[0, 1].item()
+
+                    is_deepfake = deepfake_prob > real_prob
+                    confidence = max(deepfake_prob, real_prob)
+                    confidence = round(confidence, 2)
 
                     detection = DeepfakeDetection(
                         frame_number=frame_number,
                         is_deepfake=is_deepfake,
                         confidence=confidence,
-                        model_name=f"ResNeXt-{self.model_variant}",
+                        model_name=f"{self.model_variant}",
                     )
 
                     detections.append(detection)
 
             except Exception as e:
-                # Skip frames with errors
-                pass
+                print(f"Skipping frame {frame_number} due to error: {e}")
+                continue
 
         # Save annotated video if requested
         if save_annotated and detections:
