@@ -417,3 +417,84 @@ class BaseDeepfakeDetector(ABC):
             raise ValueError("Could not extract any frames from the video")
 
         return extracted_frames
+
+    def aggregate_video_detections(
+        self,
+        detections: List[DeepfakeDetection],
+        video_path: str,
+        output_folder: str,
+        model_name: str,
+    ) -> bool:
+        """Aggregates video detections to determine final result.
+
+        Args:
+            detections: List of DeepfakeDetection objects from video frames
+            video_path: Path to the video file for logging purposes
+            output_folder: Folder path where to save the text file
+            model_name: Name of the model for display purposes
+
+        Returns:
+            bool: True if video is classified as deepfake, False otherwise,
+            int: Number of frames detected as deepfake
+            int: Total number of frames analyzed
+        """
+        if not detections:
+            print(f"No detections found for video: {video_path}")
+            return False
+
+        # Count deepfake detections
+        deepfake_count = sum(1 for detection in detections if detection.is_deepfake)
+        total_frames = len(detections)
+
+        # Determine final result based on majority voting
+        is_final_deepfake = deepfake_count >= (total_frames / 2)
+
+        # Print results
+        print(f"\n=== Video Analysis Results ===")
+        print(f"Video: {video_path}")
+        print(f"Total frames analyzed: {total_frames}")
+        print(f"Frames detected as deepfake: {deepfake_count}")
+        print(f"Frames detected as real: {total_frames - deepfake_count}")
+        print(f"Final classification: {'DEEPFAKE' if is_final_deepfake else 'REAL'}")
+        print(f"Model: {model_name}")
+        print("=" * 30)
+
+        return is_final_deepfake, deepfake_count, total_frames
+
+    def _save_final_video_result_to_txt(
+        self,
+        is_final_deepfake: bool,
+        video_path: str,
+        output_folder: str,
+        model_name: str,
+        deepfake_count: int,
+        total_frames: int,
+    ) -> None:
+        """Saves the final aggregated video result to a text file.
+
+        Args:
+            is_final_deepfake: Final aggregated decision for the video
+            video_path: Path to the video file
+            output_folder: Folder path where to save the text file
+            model_name: Name of the model for display purposes
+            deepfake_count: Number of frames detected as deepfake
+            total_frames: Total number of frames analyzed
+        """
+
+        # Create text file path based on output folder
+        txt_filename = "video_final_results.txt"
+        txt_path = os.path.join(output_folder, txt_filename)
+
+        # Create directory if it doesn't exist
+        os.makedirs(output_folder, exist_ok=True)
+
+        # Extract just the filename from the full path
+        media_name = os.path.basename(video_path)
+
+        # Append to text file
+        with open(txt_path, "a", encoding="utf-8") as txtfile:
+            txtfile.write(
+                f" | {media_name} | {model_name} | {deepfake_count}/{total_frames} deepfake frames | Final: {'DEEPFAKE' if is_final_deepfake else 'REAL'}\n"
+            )
+
+        print(f"Final result saved to: {txt_path}")

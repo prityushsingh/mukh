@@ -348,6 +348,14 @@ class ResNeXtDetector(BaseDeepfakeDetector):
                 print(f"Skipping frame {frame_number} due to error: {e}")
                 continue
 
+        # Aggregate results and print final decision
+        if detections:
+            final_result, deepfake_count, total_frames = (
+                self.aggregate_video_detections(
+                    detections, video_path, output_folder, self.model_variant
+                )
+            )
+
         # Save annotated video
         if save_annotated and detections:
             self._save_annotated_video(video_path, detections, output_folder)
@@ -355,6 +363,14 @@ class ResNeXtDetector(BaseDeepfakeDetector):
         # Save to CSV
         if save_csv and detections:
             self._save_detections_to_csv(detections, video_path, csv_path)
+            self._save_final_video_result_to_txt(
+                final_result,
+                video_path,
+                output_folder,
+                self.model_variant,
+                deepfake_count,
+                total_frames,
+            )
 
         return detections
 

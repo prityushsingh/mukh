@@ -208,12 +208,13 @@ class EfficientNetDetector(BaseDeepfakeDetector):
             prob = torch.sigmoid(logits).item()
             is_deepfake = prob >= self.confidence_threshold
             confidence = prob if is_deepfake else (1 - prob)
+            confidence = round(confidence, 2)
 
             detection = DeepfakeDetection(
                 frame_number=0,  # Single image, so frame 0
                 is_deepfake=is_deepfake,
                 confidence=confidence,
-                model_name=f"EfficientNet-{self.net_model}",
+                model_name=f"{self.net_model}",
             )
 
         # Save to CSV
@@ -267,12 +268,13 @@ class EfficientNetDetector(BaseDeepfakeDetector):
                     prob = torch.sigmoid(logits).item()
                     is_deepfake = prob >= self.confidence_threshold
                     confidence = prob if is_deepfake else (1 - prob)
+                    confidence = round(confidence, 2)
 
                     detection = DeepfakeDetection(
                         frame_number=frame_number,
                         is_deepfake=is_deepfake,
                         confidence=confidence,
-                        model_name=f"EfficientNet-{self.net_model}",
+                        model_name=f"{self.net_model}",
                     )
 
                     detections.append(detection)
@@ -281,6 +283,14 @@ class EfficientNetDetector(BaseDeepfakeDetector):
                 print(f"Error processing frame {frame_number}: {e}")
                 # Skip frames with errors
 
+        # Aggregate results and print final decision
+        if detections:
+            final_result, deepfake_count, total_frames = (
+                self.aggregate_video_detections(
+                    detections, video_path, output_folder, self.net_model
+                )
+            )
+
         # Save annotated video
         if save_annotated and detections:
             self._save_annotated_video(video_path, detections, output_folder)
@@ -288,5 +298,13 @@ class EfficientNetDetector(BaseDeepfakeDetector):
         # Save to CSV
         if save_csv and detections:
             self._save_detections_to_csv(detections, video_path, csv_path)
+            self._save_final_video_result_to_txt(
+                final_result,
+                video_path,
+                output_folder,
+                self.net_model,
+                deepfake_count,
+                total_frames,
+            )
 
         return detections

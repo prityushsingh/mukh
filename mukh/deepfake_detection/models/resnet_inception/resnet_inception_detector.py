@@ -136,6 +136,7 @@ class ResNetInceptionDetector(BaseDeepfakeDetector):
             output = torch.sigmoid(self.model(face).squeeze(0))
             is_deepfake = output.item() >= self.confidence_threshold
             confidence = output.item() if is_deepfake else (1 - output.item())
+            confidence = round(confidence, 2)
 
             detection = DeepfakeDetection(
                 frame_number=0,  # Single image, so frame 0
@@ -211,6 +212,7 @@ class ResNetInceptionDetector(BaseDeepfakeDetector):
                         confidence = (
                             output.item() if is_deepfake else (1 - output.item())
                         )
+                        confidence = round(confidence, 2)
 
                         detection = DeepfakeDetection(
                             frame_number=frame_number,
@@ -225,6 +227,14 @@ class ResNetInceptionDetector(BaseDeepfakeDetector):
                 # Skip frames with errors (e.g., no face detected)
                 pass
 
+        # Aggregate results and print final decision
+        if detections:
+            final_result, deepfake_count, total_frames = (
+                self.aggregate_video_detections(
+                    detections, video_path, output_folder, "ResNetInception"
+                )
+            )
+
         # Save annotated video if requested
         if save_annotated and detections:
             self._save_annotated_video(video_path, detections, output_folder)
@@ -232,6 +242,14 @@ class ResNetInceptionDetector(BaseDeepfakeDetector):
         # Save to CSV if requested
         if save_csv and detections:
             self._save_detections_to_csv(detections, video_path, csv_path)
+            self._save_final_video_result_to_txt(
+                final_result,
+                video_path,
+                output_folder,
+                "ResNetInception",
+                deepfake_count,
+                total_frames,
+            )
 
         return detections
 
