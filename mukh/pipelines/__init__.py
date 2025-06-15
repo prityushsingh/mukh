@@ -1,1 +1,1 @@
-from .deepfake_detection import DeepfakeDetectionPipeline
+from .deepfake_detection import PipelineDeepfakeDetection
