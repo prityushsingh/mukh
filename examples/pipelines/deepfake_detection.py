@@ -5,7 +5,7 @@ This script shows various ways to use the ensemble deepfake detection pipeline
 with different model configurations and settings.
 
 Usage:
-python -m examples.pipelines.deepfake_detection --media_path data/demo_fake/elon_musk.mp4 --output_folder output/deepfake_detection_pipeline
+python -m examples.pipelines.deepfake_detection --media_path assets/videos/deepfake_elon_musk.mp4 --output_folder output/deepfake_detection_pipeline
 """
 
 import argparse
@@ -17,10 +17,16 @@ from mukh.pipelines.deepfake_detection import PipelineDeepfakeDetection
 
 parser = argparse.ArgumentParser(description="Deepfake Detection Pipeline")
 parser.add_argument(
-    "--media_path", type=str, required=True, help="Path to the media file to analyze"
+    "--media_path",
+    type=str,
+    help="Path to the media file to analyze",
+    default="assets/videos/deepfake_elon_musk.mp4",
 )
 parser.add_argument(
-    "--output_folder", type=str, required=True, help="Path to the output folder"
+    "--output_folder",
+    type=str,
+    help="Path to the output folder",
+    default="output/deepfake_detection_pipeline",
 )
 args = parser.parse_args()
 
