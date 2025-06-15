@@ -288,7 +288,7 @@ class ResNeXtDetector(BaseDeepfakeDetector):
         if save_csv:
             self._save_detections_to_csv(detection, image_path, csv_path)
 
-        return detection
+        return detection, is_deepfake
 
     def detect_video(
         self,
@@ -363,6 +363,7 @@ class ResNeXtDetector(BaseDeepfakeDetector):
         # Save to CSV
         if save_csv and detections:
             self._save_detections_to_csv(detections, video_path, csv_path)
+            # Save final aggregated result to text file
             self._save_final_video_result_to_txt(
                 final_result,
                 video_path,
@@ -372,7 +373,7 @@ class ResNeXtDetector(BaseDeepfakeDetector):
                 total_frames,
             )
 
-        return detections
+        return detections, final_result
 
     def _tensor_to_image(self, tensor: torch.Tensor) -> np.ndarray:
         """Convert tensor to displayable image.

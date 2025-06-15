@@ -221,7 +221,7 @@ class EfficientNetDetector(BaseDeepfakeDetector):
         if save_csv:
             self._save_detections_to_csv(detection, image_path, csv_path)
 
-        return detection
+        return detection, is_deepfake
 
     def detect_video(
         self,
@@ -307,4 +307,4 @@ class EfficientNetDetector(BaseDeepfakeDetector):
                 total_frames,
             )
 
-        return detections
+        return detections, final_result
