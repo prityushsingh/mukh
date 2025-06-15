@@ -20,7 +20,6 @@ Mukh (मुख, meaning "face" in Sanskrit) is a comprehensive face analysis li
 - 🎯 **Unified API**: Single, consistent interface for multiple face analysis tasks
 - 🔄 **Model Flexibility**: Support for multiple models per task
 - 🛠️ **Custom Pipelines**: Optimized preprocessing and model combinations
-- 📊 **Evaluator Mode**: Intelligent model recommendations based on your dataset
 - 🚀 **Easy to Use**: Simple, intuitive APIs for quick integration
 
 ## Currently Supported Tasks
@@ -32,6 +31,7 @@ Mukh (मुख, meaning "face" in Sanskrit) is a comprehensive face analysis li
 ## Installation
 
 ```bash
+conda create -n mukh-dev python=3.10 -y
 pip install mukh
 ```
 
@@ -43,7 +43,7 @@ pip install mukh
 from mukh.face_detection import FaceDetector
 
 # Initialize detector
-detection_model = "mediapipe" # Other models: "blazeface", "ultralight"
+detection_model = "mediapipe"                                  # Other models: "blazeface", "ultralight"
 detector = FaceDetector.create(detection_model)
 
 # Detect faces
@@ -62,7 +62,7 @@ detections = detector.detect(
 from mukh.face_reenactment import FaceReenactor
 
 # Initialize reenactor
-reenactor_model = "tps" # Available models: "tps"
+reenactor_model = "tps"                           # Available models: "tps"
 reenactor = FaceReenactor.create(reenactor_model)
 
 # Reenact face
@@ -82,7 +82,7 @@ import torch
 from mukh.deepfake_detection import DeepfakeDetector
 
 # Initialize detector
-detection_model = "efficientnet"    # Other models "resnet_inception", "resnext"
+detection_model = "efficientnet"                  # Other models "resnet_inception", "resnext"
 
 detector = DeepfakeDetector(
     model_name=detection_model,
@@ -91,15 +91,15 @@ detector = DeepfakeDetector(
 )
 # Detect deepfakes 
 
-media_path = "assets/images/img1.jpg" # Or pass a video path
+media_path = "assets/images/img1.jpg"             # Or pass a video path
 
-detections = detector.detect(
-    media_path=media_path,  # Path to the media file (image/video)
-    save_csv=True,          # Save the detections to a CSV file
+detections, final_result = detector.detect(
+    media_path=media_path,                                         # Path to the media file (image/video)
+    save_csv=True,                                                 # Save the detections to a CSV file
     csv_path=f"output/{detection_model}/deepfake_detections.csv",  # Path to save the CSV file
-    save_annotated=True,    # Save the annotated media
-    output_folder=f"output/{args.detection_model}",  # Path to save the annotated media
-    num_frames=11,          # Number of equally spaced frames for video analysis
+    save_annotated=True,                                           # Save the annotated media
+    output_folder=f"output/{args.detection_model}",                # Path to save the annotated media
+    num_frames=11,                                                 # Number of equally spaced frames for video analysis
 )
 
 ```
@@ -109,39 +109,23 @@ detections = detector.detect(
 ```python
 from mukh.pipelines.deepfake_detection import DeepfakeDetectionPipeline
 
-# Configure models
-model_configs = [
-    {
-        "name": "resnet_inception",
-        "confidence_threshold": 0.4,
-    },
-    {
-        "name": "resnext",
-        "model_variant": "resnext",
-        "confidence_threshold": 0.5,
-    },
-    {
-        "name": "efficientnet",
-        "net_model": "EfficientNetB4",
-        "confidence_threshold": 0.6,
-    },
-]
+# Define model configurations with weights
+model_configs = {
+    "resnet_inception": 0.5,
+    "efficientnet": 0.5
+}
 
-# Create pipeline with weighted averaging
-model_weights = {"resnet_inception": 0.4, "resnext": 0.3, "efficientnet": 0.3}
-
-pipeline = DeepfakeDetectionPipeline(
-    model_configs=model_configs, model_weights=model_weights, confidence_threshold=0.5
-)
+# Create ensemble detector
+detector = PipelineDeepfakeDetection(model_configs)
 
 media_path = "assets/images/img1.jpg" # Or pass a video path
 
 # Detect deepfakes
 result = pipeline.detect(
     media_path=media_path,
+    output_folder="output/deepfake_detection_pipeline,
     save_csv=True,
-    save_annotated=True,
-    save_individual_results=True,
+    num_frames=11,        # Number of equally spaced video frames for analysis
 )
 ```
 
