@@ -9,7 +9,6 @@ from .model_hub import (
     download_reenactment_config,
     download_reenactment_model,
     download_resnet_inception_model,
-    download_resnext_model,
     download_ultralight_model,
 )
 
@@ -19,5 +18,4 @@ __all__ = [
     "download_reenactment_model",
     "download_reenactment_config",
     "download_resnet_inception_model",
-    "download_resnext_model",
 ]

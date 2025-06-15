@@ -11,14 +11,13 @@ from typing import List, Union
 from ..core.types import DeepfakeDetection
 from .models.efficientnet.efficientnet_detector import EfficientNetDetector
 from .models.resnet_inception.resnet_inception_detector import ResNetInceptionDetector
-from .models.resnext.resnext_detector import ResNeXtDetector
 
 
 class DeepfakeDetector:
     """Unified deepfake detector interface.
 
     Provides a consistent API for deepfake detection using different
-    underlying models. Currently supports ResNet Inception, ResNeXt, and EfficientNet models.
+    underlying models. Currently supports ResNet Inception and EfficientNet models.
 
     Attributes:
         model_name: Name of the detection model being used
@@ -37,7 +36,7 @@ class DeepfakeDetector:
         """Initializes the deepfake detector.
 
         Args:
-            model_name: Name of the model to use ('resnet_inception', 'resnext', 'efficientnet')
+            model_name: Name of the model to use ('resnet_inception', 'efficientnet')
             model_path: Optional custom path to model weights file
             confidence_threshold: Minimum confidence threshold for detections
             device: Device to run inference on ('cpu' or 'cuda'). Auto-detected if None
@@ -54,13 +53,6 @@ class DeepfakeDetector:
                 model_path=model_path,
                 confidence_threshold=confidence_threshold,
                 device=device,
-            )
-        elif model_name == "resnext":
-            self.detector = ResNeXtDetector(
-                model_path=model_path,
-                confidence_threshold=confidence_threshold,
-                device=device,
-                **kwargs,
             )
         elif model_name == "efficientnet":
             self.detector = EfficientNetDetector(

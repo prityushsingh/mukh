@@ -15,7 +15,7 @@ parser = argparse.ArgumentParser(description="Deepfake Detection Example")
 parser.add_argument(
     "--detection_model",
     type=str,
-    choices=["resnet_inception", "resnext", "efficientnet"],
+    choices=["resnet_inception", "efficientnet"],
     default="resnet_inception",
     help="Choose the deepfake detection model to use.",
 )

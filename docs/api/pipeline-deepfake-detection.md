@@ -52,7 +52,6 @@ get_model_info() -> Dict
 
 - `resnet_inception`
 - `efficientnet`
-- `resnext`
 
 ## Example Usage
 

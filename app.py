@@ -248,16 +248,6 @@ class GradioApp:
                 )
                 model_weights["resnet_inception"] = 0.4
 
-            if "resnext" in models_to_use:
-                model_configs.append(
-                    {
-                        "name": "resnext",
-                        "model_variant": "resnext",
-                        "confidence_threshold": 0.5,
-                    }
-                )
-                model_weights["resnext"] = 0.3
-
             if "efficientnet" in models_to_use:
                 model_configs.append(
                     {
@@ -761,8 +751,8 @@ This analysis uses multiple state-of-the-art AI models to detect potential deepf
                                 label="Upload Video", visible=True
                             )
                             deepfake_models = gr.CheckboxGroup(
-                                choices=["resnet_inception", "resnext", "efficientnet"],
-                                value=["resnet_inception", "resnext", "efficientnet"],
+                                choices=["resnet_inception", "efficientnet"],
+                                value=["resnet_inception", "efficientnet"],
                                 label="Models to Use",
                             )
                             deepfake_confidence_threshold = gr.Slider(

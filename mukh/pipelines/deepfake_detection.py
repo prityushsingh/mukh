@@ -69,7 +69,7 @@ class PipelineDeepfakeDetection:
         if not self.model_configs:
             raise ValueError("Model configurations cannot be empty")
 
-        valid_models = {"resnet_inception", "resnext", "efficientnet"}
+        valid_models = {"resnet_inception", "efficientnet"}
         for model_name in self.model_configs.keys():
             if model_name not in valid_models:
                 raise ValueError(

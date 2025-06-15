@@ -15,7 +15,7 @@ DeepfakeDetector(
 ```
 
 **Parameters:**
-- `model_name`: Name of the model ("resnet_inception", "resnext", "efficientnet")
+- `model_name`: Name of the model ("resnet_inception", "efficientnet")
 - `confidence_threshold`: Minimum confidence threshold for detections
 - `device`: Device to run inference on ("cpu" or "cuda")
 
@@ -55,4 +55,3 @@ get_model_info() -> dict
 
 - `resnet_inception`
 - `efficientnet` 
-- `resnext`

@@ -222,18 +222,3 @@ def download_resnet_inception_model(
         return model_path
     except Exception as e:
         raise Exception(f"Failed to download ResNet Inception model: {str(e)}")
-
-
-def download_resnext_model(
-    model_path: str = "model_97_acc_100_frames_FF_data.pt",
-) -> str:
-    """Download ResNeXt model checkpoint.
-
-    Downloads only the model checkpoint from public repository without requiring authentication.
-    Config files remain bundled with the package.
-    """
-    try:
-        model_path = download_model(model_path, subfolder="deepfake_detection/resnext")
-        return model_path
-    except Exception as e:
-        raise Exception(f"Failed to download ResNeXt model: {str(e)}")

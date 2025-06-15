@@ -52,5 +52,5 @@ detector = FaceDetector.create("mediapipe")  # "blazeface", "mediapipe", "ultral
 reenactor = FaceReenactor.create("tps")  # "tps"
 
 # Deepfake Detection  
-detector = DeepfakeDetector("efficientnet")  # "efficientnet", "resnet_inception", "resnext"
+detector = DeepfakeDetector("efficientnet")  # "efficientnet", "resnet_inception"
 ```

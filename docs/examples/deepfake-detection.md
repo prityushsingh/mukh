@@ -7,7 +7,7 @@ import torch
 from mukh.deepfake_detection import DeepfakeDetector
 
 detector = DeepfakeDetector(
-    model_name="resnet_inception",  # Options: "resnet_inception", "resnext", "efficientnet"
+    model_name="resnet_inception",  # Options: "resnet_inception", "efficientnet"
     confidence_threshold=0.5,
     device=torch.device("cuda" if torch.cuda.is_available() else "cpu")
 )
@@ -27,7 +27,6 @@ print(f"Deepfake: {final_result}")
 ## Available Models
 
 - `resnet_inception`
-- `resnext`
 - `efficientnet`
 
 ## Parameters

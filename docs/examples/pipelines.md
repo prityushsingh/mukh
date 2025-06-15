@@ -34,7 +34,6 @@ for key, value in info.items():
 ## Available Models
 
 - `resnet_inception`
-- `resnext` 
 - `efficientnet`
 
 ## Parameters

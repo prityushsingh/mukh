@@ -82,7 +82,7 @@ import torch
 from mukh.deepfake_detection import DeepfakeDetector
 
 # Initialize detector
-detection_model = "efficientnet"                  # Other models "resnet_inception", "resnext"
+detection_model = "efficientnet"                  # Other models "resnet_inception"
 
 detector = DeepfakeDetector(
     model_name=detection_model,
