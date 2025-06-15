@@ -35,8 +35,8 @@ theme:
     # Palette toggle for dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: blue
-      accent: blue
+      primary: black
+      accent: black
       toggle:
         icon: material/brightness-4
         name: Switch to system preference
@@ -56,6 +56,7 @@ nav:
     - Face Detection: api/face-detection.md
     - Face Reenactment: api/face-reenactment.md
     - Deepfake Detection: api/deepfake-detection.md
+    - Pipeline Deepfake Detection: api/pipeline-deepfake-detection.md
   - Contributing: contributing.md
 
 plugins:

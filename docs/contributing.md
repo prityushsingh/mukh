@@ -8,53 +8,53 @@ Thank you for your interest in contributing to Mukh! This guide will help you ge
 
 1. **Fork and Clone the Repository**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/mukh.git
+   git clone https://github.com/ishandutta0098/mukh.git
    cd mukh
    ```
 
-2. **Create a Virtual Environment**
+2. **Create a Conda Environment**
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   conda create -n mukh-dev python=3.10 -y
    ```
 
 3. **Install Development Dependencies**
+To run and test mukh as an editable package you need to install the dev environment.
    ```bash
-   pip install -e .
-   pip install -r requirements_dev.txt
-   ```
-
-4. **Install Pre-commit Hooks**
-   ```bash
-   pre-commit install
+   pip install -e ".[dev]" --use-pep517     
    ```
 
 ### Project Structure
 
 ```
 mukh/
-├── mukh/                    # Main package
+├── mukh/                   # Main package
 │   ├── core/               # Core functionality
+│   ├── deepfake_detection/ # Deepfake detection models
 │   ├── face_detection/     # Face detection models
-│   ├── deepfake_detection/ # Deepfake detection
-│   ├── reenactment/        # Face reenactment
+|   ├── pipelines           # Task specific pipelines
+│   ├── reenactment/        # Face reenactment models
 │   └── utils/              # Utility functions
 ├── examples/               # Usage examples
 ├── tests/                  # Test suite
 ├── docs/                   # Documentation
 ├── assets/                 # Test assets
-└── setup.py               # Package configuration
+└── setup.py                # Package configuration
 ```
 
 ## Development Guidelines
 
 ### Code Style
 
-- **Python Version**: Python 3.7+
+- **Python Version**: Python 3.10+
 - **Code Formatting**: Use `black` for code formatting
 - **Import Sorting**: Use `isort` for import organization
-- **Linting**: Use `flake8` for code linting
-- **Type Hints**: Use type hints where possible
+   
+```python
+#After your code changes run this 
+#in the root folder of mukh in the terminal
+isort .; black .
+```
+
 
 ### Documentation Style
 
@@ -93,25 +93,8 @@ def detect_faces(image_path: str, confidence_threshold: float = 0.5) -> List[Det
 
 ### Testing
 
-- **Test Coverage**: Aim for >90% test coverage
-- **Test Framework**: Use `pytest` for testing
-- **Test Organization**: Mirror the package structure in tests
-- **Mock External Dependencies**: Use `pytest-mock` for mocking
-
-Running tests:
-```bash
-# Run all tests
-pytest
-
-# Run tests with coverage
-pytest --cov=mukh
-
-# Run specific test file
-pytest tests/test_face_detection.py
-
-# Run tests with specific marker
-pytest -m "not slow"
-```
+Testing for mukh is under development.   
+For now ensure that all examples in the examples/ folder are running successfully.
 
 ### Git Workflow
 
@@ -122,7 +105,6 @@ pytest -m "not slow"
 
 2. **Make Your Changes**
    - Write code following the style guidelines
-   - Add tests for new functionality
    - Update documentation as needed
 
 3. **Commit Your Changes**
@@ -137,16 +119,16 @@ pytest -m "not slow"
    ```
 
 #### Commit Message Convention
-
-Use conventional commits format:
-- `feat:` for new features
-- `fix:` for bug fixes
-- `docs:` for documentation changes
-- `test:` for adding tests
-- `refactor:` for code refactoring
-- `style:` for formatting changes
-- `ci:` for CI/CD changes
-
+  
+Use conventional commits format:  
+- `feat:` for new features  
+- `fix:` for bug fixes  
+- `docs:` for documentation changes  
+- `test:` for adding tests  
+- `refactor:` for code refactoring  
+- `style:` for formatting changes  
+- `ci:` for CI/CD changes  
+  
 ## Types of Contributions
 
 ### 🐛 Bug Reports
@@ -160,11 +142,11 @@ When reporting bugs, please include:
 
 ### 💡 Feature Requests
 
-For feature requests, please provide:
-- Clear description of the proposed feature
-- Use case and motivation
-- Possible implementation approach
-- Examples of similar features in other libraries
+For feature requests, please provide:  
+- Clear description of the proposed feature  
+- Use case and motivation  
+- Possible implementation approach  
+- Examples of similar features in other libraries  
 
 ### 🔧 Code Contributions
 
@@ -219,31 +201,31 @@ To add a new face detection model:
    ```
 
 4. **Update Documentation**
-   - Add model to API documentation
-   - Include usage examples
-   - Update model comparison tables
+    - Add model to API documentation
+    - Include usage examples
+    - Update model comparison tables
 
 #### Adding New Features
 
 1. **Design the API**
-   - Follow existing patterns
-   - Ensure consistency with other modules
-   - Consider backward compatibility
+    - Follow existing patterns
+    - Ensure consistency with other modules
+    - Consider backward compatibility
 
 2. **Implement the Feature**
-   - Write clean, documented code
-   - Handle edge cases and errors
-   - Follow performance best practices
+    - Write clean, documented code
+    - Handle edge cases and errors
+    - Follow performance best practices
 
 3. **Add Comprehensive Tests**
-   - Unit tests for individual functions
-   - Integration tests for end-to-end workflows
-   - Performance tests for computationally intensive features
+    - Unit tests for individual functions
+    - Integration tests for end-to-end workflows
+    - Performance tests for computationally intensive features
 
 4. **Update Documentation**
-   - API reference documentation
-   - Usage examples
-   - Tutorial or guide if applicable
+    - API reference documentation
+    - Usage examples
+    - Tutorial or guide if applicable
 
 ### 📚 Documentation Contributions
 
@@ -275,13 +257,6 @@ To add a new face detection model:
 3. **Review Tests**: Ensure adequate test coverage
 4. **Documentation Review**: Check for clear documentation
 
-## Release Process
-
-Mukh follows semantic versioning (SemVer):
-- **MAJOR**: Breaking changes
-- **MINOR**: New features (backward compatible)
-- **PATCH**: Bug fixes (backward compatible)
-
 ## Community Guidelines
 
 ### Code of Conduct
@@ -307,12 +282,6 @@ Contributors will be recognized in:
 
 ## Development Tools
 
-### Recommended IDE Setup
-
-- **VS Code**: With Python extension
-- **PyCharm**: Professional or Community edition
-- **Vim/Neovim**: With appropriate Python plugins
-
 ### Useful Tools
 
 - **black**: Code formatting
@@ -321,14 +290,6 @@ Contributors will be recognized in:
 - **mypy**: Type checking
 - **pytest**: Testing
 - **pre-commit**: Git hooks
-
-### Environment Variables
-
-Set these for development:
-```bash
-export PYTHONPATH="${PYTHONPATH}:$(pwd)"
-export MUKH_DEBUG=1  # Enable debug logging
-```
 
 ## Troubleshooting
 
