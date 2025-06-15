@@ -48,7 +48,7 @@ detector = DeepfakeDetector(
 )
 
 # Detect deepfakes in the media file
-detections = detector.detect(
+detections, final_result = detector.detect(
     media_path=args.media_path,  # Path to the media file to analyze (image/video)
     save_csv=True,  # Save the detections to a CSV file
     csv_path=f"output/{args.detection_model}/deepfake_detections.csv",  # Path to save the CSV file
@@ -56,3 +56,5 @@ detections = detector.detect(
     output_folder=f"output/{args.detection_model}",  # Path to save the annotated media
     num_frames=args.num_frames,  # Number of equally spaced frames for video analysis
 )
+
+print(f"Deepfake: {final_result}")

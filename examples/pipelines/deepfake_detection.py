@@ -1,42 +1,58 @@
-import argparse
+"""
+Example script demonstrating how to use the PipelineDeepfakeDetection class.
 
-from mukh.pipelines.deepfake_detection import DeepfakeDetectionPipeline
+This script shows various ways to use the ensemble deepfake detection pipeline
+with different model configurations and settings.
+
+Usage:
+python -m examples.pipelines.deepfake_detection --media_path data/demo_fake/elon_musk.mp4 --output_folder output/deepfake_detection_pipeline
+"""
+
+import argparse
+import os
+import sys
+from pathlib import Path
+
+from mukh.pipelines.deepfake_detection import PipelineDeepfakeDetection
 
 parser = argparse.ArgumentParser(description="Deepfake Detection Pipeline")
 parser.add_argument(
     "--media_path", type=str, required=True, help="Path to the media file to analyze"
 )
+parser.add_argument(
+    "--output_folder", type=str, required=True, help="Path to the output folder"
+)
 args = parser.parse_args()
 
-# Configure models
-model_configs = [
-    {
-        "name": "resnet_inception",
-        "confidence_threshold": 0.4,
-    },
-    {
-        "name": "resnext",
-        "model_variant": "resnext",
-        "confidence_threshold": 0.5,
-    },
-    {
-        "name": "efficientnet",
-        "net_model": "EfficientNetB4",
-        "confidence_threshold": 0.6,
-    },
-]
 
-# Create pipeline with weighted averaging
-model_weights = {"resnet_inception": 0.4, "resnext": 0.3, "efficientnet": 0.3}
+# Define model configurations with weights
+model_configs = {"resnet_inception": 0.5, "efficientnet": 0.5}
 
-pipeline = DeepfakeDetectionPipeline(
-    model_configs=model_configs, model_weights=model_weights, confidence_threshold=0.5
-)
+# Create ensemble detector
+detector = PipelineDeepfakeDetection(model_configs)
 
-# Detect deepfakes
-result = pipeline.detect(
-    media_path=args.media_path,
-    save_csv=True,
-    save_annotated=True,
-    save_individual_results=True,
-)
+# Print detector information
+print("Detector Info:")
+info = detector.get_model_info()
+for key, value in info.items():
+    print(f"  {key}: {value}")
+
+if os.path.exists(args.media_path):
+    try:
+        # Run detection
+        result = detector.detect(
+            media_path=args.media_path,
+            output_folder=args.output_folder,
+            save_csv=True,
+            num_frames=11,
+        )
+
+        print(result)
+        print(f"\nFinal Result: {'DEEPFAKE' if result else 'REAL'}")
+        print(f"Results saved to: {args.output_folder}")
+
+    except Exception as e:
+        print(f"Error during detection: {e}")
+else:
+    print(f"Media file not found: {args.media_path}")
+    print("Please update the media_path variable with a valid file path.")
