@@ -12,7 +12,7 @@ detections = detector.detect("path/to/image.jpg")
 ## Face Reenactment
 
 ```python
-from mukh.face_reenactment import FaceReenactor
+from mukh.reenactment import FaceReenactor
 
 reenactor = FaceReenactor.create("tps")
 result = reenactor.reenact_from_video(
