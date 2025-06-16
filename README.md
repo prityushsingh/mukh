@@ -22,7 +22,7 @@ Mukh (मुख, meaning "face" in Sanskrit) is a comprehensive face analysis li
 - 🛠️ **Custom Pipelines**: Optimized preprocessing and model combinations
 - 🚀 **Easy to Use**: Simple, intuitive APIs for quick integration
   
-  
+
 ## Documentation
 The library is documented in detail, [click here](https://ishandutta0098.github.io/mukh/) to view the documentation.
   
@@ -42,7 +42,7 @@ pip install mukh
 
 ## Usage
 
-### Face Detection
+## Face Detection
 
 ```python
 from mukh.face_detection import FaceDetector
@@ -61,7 +61,12 @@ detections = detector.detect(
 )
 ```
   
-### Face Reenactment
+### Example
+```python 
+python examples/face_detection/basic_detection.py --detection_model mediapipe
+```
+  
+## Face Reenactment
 
 ```python
 from mukh.face_reenactment import FaceReenactor
@@ -80,8 +85,19 @@ result_path = reenactor.reenact_from_video(
 )
 ```
 
-### Deepfake Detection
+### Example
+```python
+python examples/reenactment/basic_reenactment.py \
+  --reenactor_model tps \
+  --source_path assets/images/img1.jpg \
+  --driving_video_path assets/videos/video_1sec.mp4 \
+  --output_folder output
+```
   
+## Deepfake Detection
+
+### Images
+
 ```python
 import torch
 from mukh.deepfake_detection import DeepfakeDetector
@@ -106,6 +122,29 @@ detections, final_result = detector.detect(
     save_annotated=True,                                           # Save the annotated media
     output_folder=f"output/{args.detection_model}",                # Path to save the annotated media
 )
+```
+
+### Example
+```python
+python examples/deepfake_detection/detection.py \
+  --detection_model resnet_inception \
+  --media_path assets/images/img1.jpg \
+  --confidence_threshold 0.5 \
+```
+  
+### Videos
+```python
+import torch
+from mukh.deepfake_detection import DeepfakeDetector
+
+# Initialize detector
+detection_model = "efficientnet"                  # Other models "resnet_inception"
+
+detector = DeepfakeDetector(
+    model_name=detection_model,
+    confidence_threshold=0.5,
+    device=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
+)
 
 # Detect deepfakes in Videos
 
@@ -121,8 +160,17 @@ detections, final_result = detector.detect(
 )
 
 ```
-   
-### Deepfake Detection Pipeline
+
+### Example
+```python
+python examples/deepfake_detection/detection.py \
+  --detection_model resnet_inception \
+  --media_path assets/videos/deepfake_elon_musk.mp4 \
+  --confidence_threshold 0.5 \
+  --num_frames 11
+```
+  
+## Deepfake Detection Pipeline
   
 ```python
 from mukh.pipelines.deepfake_detection import PipelineDeepfakeDetection
@@ -136,7 +184,7 @@ model_configs = {
 # Create ensemble detector
 detector = PipelineDeepfakeDetection(model_configs)
 
-media_path = "assets/images/img1.jpg" # Or pass a video path
+media_path = "assets/videos/deepfake_elon_musk.mp4" # Or pass an image path
 
 # Detect deepfakes
 result = pipeline.detect(
@@ -147,6 +195,12 @@ result = pipeline.detect(
 )
 ```
 
+### Example
+```python
+python examples/pipelines/deepfake_detection.py \
+  --media_path assets/videos/deepfake_elon_musk.mp4 \
+  --output_folder output/deepfake_detection_pipeline
+```
 ## Contact
 
 For questions and feedback, please open an issue on GitHub.
