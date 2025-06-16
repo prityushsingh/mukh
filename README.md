@@ -107,7 +107,7 @@ detections, final_result = detector.detect(
 ### Deepfake Detection Pipeline
   
 ```python
-from mukh.pipelines.deepfake_detection import DeepfakeDetectionPipeline
+from mukh.pipelines.deepfake_detection import PipelineDeepfakeDetection
 
 # Define model configurations with weights
 model_configs = {
