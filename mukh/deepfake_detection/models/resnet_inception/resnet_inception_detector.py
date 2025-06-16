@@ -20,10 +20,6 @@ from ....core.model_hub import download_resnet_inception_model
 from ....core.types import DeepfakeDetection
 from ..base import BaseDeepfakeDetector
 
-# from pytorch_grad_cam import GradCAM
-# from pytorch_grad_cam.utils.image import show_cam_on_image
-# from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
-
 
 class ResNetInceptionDetector(BaseDeepfakeDetector):
     """ResNet Inception deepfake detector implementation.
@@ -146,11 +142,7 @@ class ResNetInceptionDetector(BaseDeepfakeDetector):
                 model_name="ResNetInception",
             )
 
-        # Save explainability visualization if requested
         if save_annotated:
-            # self._save_explainability_visualization(
-            #     face, face_image_to_plot, prev_face, image_path, output_folder
-            # )
             self._save_annotated_image(image, detection, image_path, output_folder)
 
         # Save to CSV if requested
@@ -254,58 +246,3 @@ class ResNetInceptionDetector(BaseDeepfakeDetector):
             )
 
         return detections, final_result
-
-    # def _save_explainability_visualization(
-    #     self,
-    #     face_tensor: torch.Tensor,
-    #     face_image_to_plot: np.ndarray,
-    #     prev_face: np.ndarray,
-    #     image_path: str,
-    #     output_folder: str,
-    # ) -> None:
-    #     """Saves explainability visualization using GradCAM.
-
-    #     Args:
-    #         face_tensor: Preprocessed face tensor for model input
-    #         face_image_to_plot: Face image for visualization overlay
-    #         prev_face: Original face image
-    #         image_path: Path to the original image
-    #         output_folder: Directory to save visualizations
-    #     """
-    #     try:
-    #         # Generate GradCAM visualization
-    #         target_layers = [self.model.block8.branch1[-1]]
-    #         use_cuda = True if self.device.type == "cuda" else False
-    #         cam = GradCAM(
-    #             model=self.model, target_layers=target_layers, use_cuda=use_cuda
-    #         )
-    #         targets = [ClassifierOutputTarget(0)]
-
-    #         grayscale_cam = cam(
-    #             input_tensor=face_tensor, targets=targets, eigen_smooth=True
-    #         )
-    #         grayscale_cam = grayscale_cam[0, :]
-    #         visualization = show_cam_on_image(
-    #             face_image_to_plot, grayscale_cam, use_rgb=True
-    #         )
-    #         face_with_mask = cv2.addWeighted(prev_face, 1, visualization, 0.5, 0)
-
-    #         # Create output directory
-    #         os.makedirs(output_folder, exist_ok=True)
-
-    #         # Save original face
-    #         face_pil = Image.fromarray(prev_face)
-    #         image_name = os.path.basename(image_path)
-    #         name, _ = os.path.splitext(image_name)
-    #         face_path = os.path.join(output_folder, f"{name}_detected_face.jpg")
-    #         face_pil.save(face_path)
-
-    #         # Save explainability visualization
-    #         viz_path = os.path.join(
-    #             output_folder, f"{name}_explainability_visualization.jpg"
-    #         )
-    #         cv2.imwrite(viz_path, cv2.cvtColor(face_with_mask, cv2.COLOR_RGB2BGR))
-
-    #     except Exception as e:
-    #         # Silently skip visualization errors
-    #         pass
