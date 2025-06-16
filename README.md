@@ -67,14 +67,9 @@ detections = detector.detect(
 python examples/face_detection/basic_detection.py --detection_model mediapipe
 ```
 
-### Input Image
-<img src = "https://github.com/ishandutta0098/mukh/blob/main/assets/images/img1.jpg" width=200>          
-  
 ### Output Annotated Image
 <img src = "https://github.com/user-attachments/assets/e2670b72-eb53-4cc1-ba5c-a3293ae23589" width=200> 
-
-Annotated image with the bounding box and confidence
-
+  
 ```python
 image_name | x1 |   y1  |  x2 |  y2 | confidence
  img1.jpg  | 62 |  228  | 453 | 619 | 0.9381868243217468
@@ -107,14 +102,6 @@ python examples/reenactment/basic_reenactment.py \
   --driving_video_path assets/videos/video_1sec.mp4 \
   --output_folder output
 ```
-
-### Input
-#### Source Image
-<img src = "https://github.com/ishandutta0098/mukh/blob/main/assets/images/img1.jpg" width=200>          
-
-#### Driving Video
-  
-https://github.com/user-attachments/assets/8bfba67e-abb6-45a3-809f-bde58cce8b11  
 
 ### Output
   
@@ -156,11 +143,7 @@ python examples/deepfake_detection/detection.py \
   --detection_model resnet_inception \
   --media_path assets/images/img1.jpg \
   --confidence_threshold 0.5
-```
-
-### Input
-#### Source Image
-<img src = "https://github.com/ishandutta0098/mukh/blob/main/assets/images/img1.jpg" width=200>     
+```  
 
 ### Output
 ```python
@@ -206,10 +189,6 @@ python examples/deepfake_detection/detection.py \
   --confidence_threshold 0.5 \
   --num_frames 11
 ```
-
-### Input
-
-https://github.com/user-attachments/assets/7a3b85de-d3cb-4c5f-90a7-3900a6132a00
 
 ### Output
 ```python
