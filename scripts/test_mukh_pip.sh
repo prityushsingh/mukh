@@ -21,7 +21,7 @@ echo "--------------------------------"
 
 echo "\nTesting deepfake detection pipeline..."
 python -m examples.pipelines.deepfake_detection --media_path assets/images/img1.jpg --output_folder output/deepfake_detection_pipeline_img
-python -m examples.pipelines.deepfake_detection --media_path data/demo_fake/elon_musk.mp4 --output_folder output/deepfake_detection_pipeline_video
+python -m examples.pipelines.deepfake_detection --media_path assets/videos/deepfake_elon_musk.mp4 --output_folder output/deepfake_detection_pipeline_video
 echo "Completed testing deepfake detection pipeline"
 echo "--------------------------------"
 
