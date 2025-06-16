@@ -71,7 +71,8 @@ python examples/face_detection/basic_detection.py --detection_model mediapipe
 <img src = "https://github.com/ishandutta0098/mukh/blob/main/assets/images/img1.jpg" width=200>          
   
 ### Output Annotated Image
-<img src = "https://github.com/ishandutta0098/mukh/blob/main/assets/demos/face_detection/img1_detected.jpg" width=200> 
+<img src = "https://github.com/user-attachments/assets/e2670b72-eb53-4cc1-ba5c-a3293ae23589" width=200> 
+
 Annotated image with the bounding box and confidence
 
 ```python
@@ -164,7 +165,7 @@ python examples/deepfake_detection/detection.py \
 ### Output
 ```python
 media_name | frame_number | is_deepfake | confidence | model_name
-img1.jpg   |      0       |      False  |    0.99    | ResNetInception
+img1.jpg   |      0       |      False  |    0.99    | efficientnet
 ```
 
   
