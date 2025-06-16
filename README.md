@@ -58,7 +58,7 @@ detections = detector.detect(
     save_csv=True,                                             # Save the detections to a CSV file
     csv_path=f"output/{detection_model}/detections.csv",       # Path to save the CSV file
     save_annotated=True,                                       # Save the annotated image
-    output_folder=f"output/detection_model",                   # Path to save the annotated image
+    output_folder=f"output/{detection_model}",                   # Path to save the annotated image
 )
 ```
   
@@ -70,7 +70,7 @@ python examples/face_detection/basic_detection.py --detection_model mediapipe
 ## Face Reenactment
 
 ```python
-from mukh.face_reenactment import FaceReenactor
+from mukh.reenactment import FaceReenactor
 
 # Initialize reenactor
 reenactor_model = "tps"                           # Available models: "tps"
@@ -121,7 +121,7 @@ detections, final_result = detector.detect(
     save_csv=True,                                                 # Save the detections to a CSV file
     csv_path=f"output/{detection_model}/deepfake_detections.csv",  # Path to save the CSV file
     save_annotated=True,                                           # Save the annotated media
-    output_folder=f"output/{args.detection_model}",                # Path to save the annotated media
+    output_folder=f"output/{detection_model}",                # Path to save the annotated media
 )
 ```
 
@@ -156,7 +156,7 @@ detections, final_result = detector.detect(
     save_csv=True,                                                 # Save the detections to a CSV file
     csv_path=f"output/{detection_model}/deepfake_detections.csv",  # Path to save the CSV file
     save_annotated=True,                                           # Save the annotated media
-    output_folder=f"output/{args.detection_model}",                # Path to save the annotated media
+    output_folder=f"output/{detection_model}",                # Path to save the annotated media
     num_frames=11,                                                 # Number of equally spaced frames for video analysis
 )
 
