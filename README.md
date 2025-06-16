@@ -21,12 +21,17 @@ Mukh (मुख, meaning "face" in Sanskrit) is a comprehensive face analysis li
 - 🔄 **Model Flexibility**: Support for multiple models per task
 - 🛠️ **Custom Pipelines**: Optimized preprocessing and model combinations
 - 🚀 **Easy to Use**: Simple, intuitive APIs for quick integration
-
+  
+  
+## Documentation
+The library is documented in detail, [click here](https://ishandutta0098.github.io/mukh/) to view the documentation.
+  
 ## Currently Supported Tasks
 
 - Face Detection
 - Face Reenactment
-- Deepfake Detection
+- Deepfake Detection using a Single Model
+- Deepfake Detection Pipeline - Ensemble of multiple models
 
 ## Installation
 
@@ -89,9 +94,22 @@ detector = DeepfakeDetector(
     confidence_threshold=0.5,
     device=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
 )
-# Detect deepfakes 
 
-media_path = "assets/images/img1.jpg"             # Or pass a video path
+# Detect deepfakes in Images
+
+media_path = "assets/images/img1.jpg"             
+
+detections, final_result = detector.detect(
+    media_path=media_path,                                         # Path to the media file (image/video)
+    save_csv=True,                                                 # Save the detections to a CSV file
+    csv_path=f"output/{detection_model}/deepfake_detections.csv",  # Path to save the CSV file
+    save_annotated=True,                                           # Save the annotated media
+    output_folder=f"output/{args.detection_model}",                # Path to save the annotated media
+)
+
+# Detect deepfakes in Videos
+
+media_path = "assets/videos/deepfake_elon_musk.mp4"             
 
 detections, final_result = detector.detect(
     media_path=media_path,                                         # Path to the media file (image/video)
