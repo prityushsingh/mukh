@@ -190,7 +190,7 @@ media_path = "assets/videos/deepfake_elon_musk.mp4" # Or pass an image path
 # Detect deepfakes
 result = pipeline.detect(
     media_path=media_path,
-    output_folder="output/deepfake_detection_pipeline,
+    output_folder="output/deepfake_detection_pipeline",
     save_csv=True,
     num_frames=11,        # Number of equally spaced video frames for analysis
 )
