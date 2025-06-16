@@ -38,7 +38,7 @@ The library is documented in detail, [click here](https://ishandutta0098.github.
 
 ```bash
 conda create -n mukh-dev python=3.10 -y
-pip install mukh==0.1.13
+pip install mukh==0.1.14
 ```
 
 ## Usage

@@ -12,7 +12,7 @@ conda create -n mukh-pip python=3.10 -y
 # Activate conda environment
 eval "$(conda shell.bash hook)"
 conda activate mukh-pip
-pip install mukh==0.1.13
+pip install mukh==0.1.14
 
 echo "\nCleaning output directory..."
 rm -rf output
