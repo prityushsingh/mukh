@@ -17,11 +17,10 @@
 Mukh (मुख, meaning "face" in Sanskrit) is a comprehensive face analysis library that provides unified APIs for various face-related tasks. It simplifies the process of working with multiple face analysis models through a consistent interface.
 
 ## Features
-
+- 🥸 **Ensemble DeepFake Detector** The first python package featuring an Ensemble DeepFake Detector
 - 🎯 **Unified API**: Single, consistent interface for multiple face analysis tasks
 - 🔄 **Model Flexibility**: Support for multiple models per task
 - 🛠️ **Custom Pipelines**: Optimized preprocessing and model combinations
-- 🚀 **Easy to Use**: Simple, intuitive APIs for quick integration
   
 
 ## Documentation
@@ -66,6 +65,18 @@ detections = detector.detect(
 ```python 
 python examples/face_detection/basic_detection.py --detection_model mediapipe
 ```
+
+### Input Image
+<img src = "https://github.com/ishandutta0098/mukh/blob/main/assets/images/img1.jpg" width=200>          
+  
+### Output Annotated Image
+<img src = "https://github.com/ishandutta0098/mukh/blob/main/assets/demos/face_detection/img1_detected.jpg" width=200> 
+Annotated image with the bounding box and confidence
+
+```python
+image_name | x1 |   y1  |  x2 |  y2 | confidence
+ img1.jpg  | 62 |  228  | 453 | 619 | 0.9381868243217468
+```
   
 ## Face Reenactment
 
@@ -94,6 +105,18 @@ python examples/reenactment/basic_reenactment.py \
   --driving_video_path assets/videos/video_1sec.mp4 \
   --output_folder output
 ```
+
+### Input
+#### Source Image
+<img src = "https://github.com/ishandutta0098/mukh/blob/main/assets/images/img1.jpg" width=200>          
+
+#### Driving Video
+  
+https://github.com/user-attachments/assets/8bfba67e-abb6-45a3-809f-bde58cce8b11  
+
+### Output
+  
+https://github.com/user-attachments/assets/875ba692-ea78-42e3-9e03-d1f4703930be
   
 ## Deepfake Detection
 
@@ -132,6 +155,17 @@ python examples/deepfake_detection/detection.py \
   --media_path assets/images/img1.jpg \
   --confidence_threshold 0.5
 ```
+
+### Input
+#### Source Image
+<img src = "https://github.com/ishandutta0098/mukh/blob/main/assets/images/img1.jpg" width=200>     
+
+### Output
+```python
+media_name | frame_number | is_deepfake | confidence | model_name
+img1.jpg   |      0       |      False  |    0.99    | ResNetInception
+```
+
   
 ### Videos
 ```python
@@ -170,6 +204,29 @@ python examples/deepfake_detection/detection.py \
   --confidence_threshold 0.5 \
   --num_frames 11
 ```
+
+### Input
+
+https://github.com/user-attachments/assets/7a3b85de-d3cb-4c5f-90a7-3900a6132a00
+
+### Output
+```python
+      media_name       | frame_number |is_deepfake|confidence|      model_name
+deepfake_elon_musk.mp4 |      0       |    True  |    0.99   |EfficientNetAutoAttB4
+deepfake_elon_musk.mp4 |      43      |    True  |    0.69   |EfficientNetAutoAttB4
+deepfake_elon_musk.mp4 |      86      |    False |    0.73   |EfficientNetAutoAttB4
+deepfake_elon_musk.mp4 |     172      |    True  |    0.95   |EfficientNetAutoAttB4
+deepfake_elon_musk.mp4 |     215      |    True  |    0.98   |EfficientNetAutoAttB4
+deepfake_elon_musk.mp4 |     129      |    True  |    0.96   |EfficientNetAutoAttB4
+deepfake_elon_musk.mp4 |     258      |    True  |    0.53   |EfficientNetAutoAttB4
+deepfake_elon_musk.mp4 |     301      |    True  |    0.77   |EfficientNetAutoAttB4
+deepfake_elon_musk.mp4 |     344      |    False |    0.83   |EfficientNetAutoAttB4
+deepfake_elon_musk.mp4 |     387      |    True  |    0.62   |EfficientNetAutoAttB4
+deepfake_elon_musk.mp4 |     431      |    False |    0.79   |EfficientNetAutoAttB4
+```
+```python
+| deepfake_elon_musk.mp4 | EfficientNetAutoAttB4 | 8/11 deepfake frames | Final: DEEPFAKE
+```
   
 ## Deepfake Detection Pipeline
   
@@ -202,6 +259,41 @@ python examples/pipelines/deepfake_detection.py \
   --media_path assets/videos/deepfake_elon_musk.mp4 \
   --output_folder output/deepfake_detection_pipeline
 ```
+
+### Output
+**Ensemble confidence score**
+```python
+frame_number|is_deepfake|confidence
+     0      |   True    |   0.5
+    43      |   True    |   0.84
+    86      |   True    |   0.635
+   129      |   True    |   0.98
+   172      |   True    |   0.975
+   215      |   True    |   0.99
+   258      |   True    |   0.765
+   301      |   True    |   0.885
+   344      |   True    |   0.585
+   387      |   True    |   0.81
+   431      |   True    |   0.605
+```
+
+**Result from the respective models**
+```python
+ | deepfake_elon_musk.mp4 |   ResNetInception     | 10/11 deepfake frames | Final: DEEPFAKE
+ | deepfake_elon_musk.mp4 | EfficientNetAutoAttB4 |  8/11 deepfake frames | Final: DEEPFAKE
+```
+
+**Final Pipeline Output**
+```python
+Final Ensemble Result: DEEPFAKE
+Deepfake frames: 11/11
+Average confidence: 0.7791
+Model configurations: {
+  'resnet_inception': 0.5,
+  'efficientnet': 0.5
+}
+```
+  
 ## Contact
 
 For questions and feedback, please open an issue on GitHub.
