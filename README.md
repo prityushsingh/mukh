@@ -17,8 +17,8 @@
 Mukh (मुख, meaning "face" in Sanskrit) is a comprehensive face analysis library that provides unified APIs for various face-related tasks. It simplifies the process of working with multiple face analysis models through a consistent interface.
 
 ## Features
-- 🥸 **Ensemble DeepFake Detector** The first python package featuring an Ensemble DeepFake Detector
-- 🎯 **Unified API**: Single, consistent interface for multiple face analysis tasks
+- 🥸 **DeepFake Detector:** First python package featuring an Ensemble of multiple models
+- 🎯 **Unified API**: Single, consistent API for multiple face analysis tasks like face detection and reenactment
 - 🔄 **Model Flexibility**: Support for multiple models per task
 - 🛠️ **Custom Pipelines**: Optimized preprocessing and model combinations
   
@@ -29,14 +29,15 @@ The library is documented in detail, [click here](https://ishandutta0098.github.
 ## Currently Supported Tasks
 
 - Face Detection
-- Face Reenactment
-- Deepfake Detection using a Single Model
+- Face Reenactment with Source Image and Driving Video
+- Deepfake Detection for Image and Video
 - Deepfake Detection Pipeline - Ensemble of multiple models
 
 ## Installation
 
 ```bash
 conda create -n mukh-dev python=3.10 -y
+conda activate mukh-dev
 pip install mukh==0.1.14
 ```
 
