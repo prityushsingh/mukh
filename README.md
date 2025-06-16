@@ -130,7 +130,7 @@ detections, final_result = detector.detect(
 python examples/deepfake_detection/detection.py \
   --detection_model resnet_inception \
   --media_path assets/images/img1.jpg \
-  --confidence_threshold 0.5 \
+  --confidence_threshold 0.5
 ```
   
 ### Videos
@@ -183,7 +183,7 @@ model_configs = {
 }
 
 # Create ensemble detector
-detector = PipelineDeepfakeDetection(model_configs)
+pipeline = PipelineDeepfakeDetection(model_configs)
 
 media_path = "assets/videos/deepfake_elon_musk.mp4" # Or pass an image path
 
