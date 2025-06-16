@@ -18,4 +18,5 @@ __all__ = [
     "download_reenactment_model",
     "download_reenactment_config",
     "download_resnet_inception_model",
+    "download_efficientnet_model",
 ]

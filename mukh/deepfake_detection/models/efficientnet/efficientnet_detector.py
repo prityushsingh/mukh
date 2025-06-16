@@ -86,13 +86,40 @@ class EfficientNetDetector(BaseDeepfakeDetector):
         Returns:
             EfficientNet model configured for binary classification
         """
-        model_url = weights.weight_url[
-            "{:s}_{:s}".format(self.net_model, self.train_db)
-        ]
+        model_key = "{:s}_{:s}".format(self.net_model, self.train_db)
+        model_url = weights.weight_url[model_key]
         net = getattr(fornet, self.net_model)().eval().to(self.device)
-        net.load_state_dict(
-            load_url(model_url, map_location=self.device, check_hash=True)
-        )
+        
+        try:
+            # Try to load from original URL first
+            net.load_state_dict(
+                load_url(model_url, map_location=self.device, check_hash=True)
+            )
+
+        except Exception as e:
+            print(f"Failed to download from original URL ({model_url}): {e}")
+            print("Attempting to download from Hugging Face Hub as fallback...")
+
+            try:
+                from mukh.core.model_hub import download_efficientnet_model
+
+                # Try to download from Hugging Face Hub
+                model_path = download_efficientnet_model(model_key)
+
+                # Load the downloaded model
+                state_dict = torch.load(model_path, map_location=self.device)
+                net.load_state_dict(state_dict)
+                print(
+                    f"✅ Successfully loaded model from Hugging Face Hub: {model_path}"
+                )
+
+            except Exception as hf_error:
+                raise Exception(
+                    f"Failed to load model from both original URL and Hugging Face Hub.\n"
+                    f"Original error: {e}\n"
+                    f"Hugging Face error: {hf_error}"
+                )
+
         return net
 
     def _get_transformer(self) -> transforms.Compose:

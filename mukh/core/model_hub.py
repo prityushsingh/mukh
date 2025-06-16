@@ -222,3 +222,46 @@ def download_resnet_inception_model(
         return model_path
     except Exception as e:
         raise Exception(f"Failed to download ResNet Inception model: {str(e)}")
+
+
+def download_efficientnet_model(model_key: str) -> str:
+    """Download EfficientNet model checkpoint from Hugging Face Hub.
+
+    Downloads EfficientNet deepfake detection model weights from public repository
+    without requiring authentication.
+
+    Args:
+        model_key: Model key in format "ModelName_Dataset" (e.g., "EfficientNetB4_DFDC")
+
+    Returns:
+        Local path to the downloaded model file
+
+    Raises:
+        Exception: If download fails or model not found
+    """
+    try:
+        # Map model keys to their filenames
+        filename_mapping = {
+            "EfficientNetAutoAttB4_DFDC": "EfficientNetAutoAttB4_DFDC_bestval-72ed969b2a395fffe11a0d5bf0a635e7260ba2588c28683630d97ff7153389fc.pth",
+            "EfficientNetB4_DFDC": "EfficientNetB4_DFDC_bestval-c9f3663e2116d3356d056a0ce6453e0fc412a8df68ebd0902f07104d9129a09a.pth",
+            "efficientnet-b4": "efficientnet-b4-6ed6700e.pth",
+        }
+
+        if model_key not in filename_mapping:
+            available_keys = list(filename_mapping.keys())
+            raise ValueError(
+                f"Unknown model key: {model_key}. "
+                f"Available models: {available_keys}\n"
+                f"Note: Only DFDC variants are available as fallback. "
+                f"Other variants (FFPP, ST) are not uploaded to Hugging Face Hub."
+            )
+
+        filename = filename_mapping[model_key]
+        model_path = download_model(
+            filename, subfolder="deepfake_detection/efficientnet"
+        )
+        return model_path
+    except Exception as e:
+        raise Exception(
+            f"Failed to download EfficientNet model for {model_key}: {str(e)}"
+        )
