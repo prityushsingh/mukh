@@ -2,12 +2,11 @@
 Basic example showing how to use a single face detector to detect faces in an image.
 
 Usage:
-<<<<<<< add-image-path-arg
-python -m examples.face_detection.basic_detection --image_path path/to/image.jpg
-=======
-python examples/face_detection/basic_detection.py --detection_model mediapipe
->>>>>>> main
+python examples/face_detection/basic_detection.py \
+    --detection_model mediapipe \
+    --image_path assets/images/img1.jpg
 """
+
 
 import argparse
 
